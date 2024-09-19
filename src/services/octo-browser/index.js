@@ -18,13 +18,26 @@ class OctoBrowserApi {
         this.baseUrl = config.get('octoBrowser.baseUrl');
     }
 
-    async checkOctoIsRunning() {
+    /**
+     * @returns {Promise<Profile[]>}
+     */
+    async listActiveProfiles() {
         try {
-            logger.info('Checking if OctoBrowser is running');
+            logger.info('Listing active profiles');
 
             const response = await axios.get(`${this.baseUrl}/api/profiles/active`);
 
-            return response.status === 200;
+            return response.data;
+        } catch (error) {
+            throw new Error(`OCTO_BROWSER_ERROR:: Failed to list active profiles: ${formatOctoError(error)}`);
+        }
+    }
+
+    async checkOctoIsRunning() {
+        try {
+            await this.listActiveProfiles();
+
+            return true;
         } catch (error) {
             return false;
         }
@@ -51,6 +64,28 @@ class OctoBrowserApi {
             return response.data;
         } catch (error) {
             throw new Error(`OCTO_BROWSER_ERROR:: Failed to start profile: ${formatOctoError(error)}`);
+        }
+    }
+
+    async connectIfExistsCreateIfNot(profileId) {
+        try {
+            logger.info(`Connecting to profile with id: ${profileId}`);
+
+            const activeProfiles = await this.listActiveProfiles();
+
+            const profile = activeProfiles.find(({ uuid }) => uuid === profileId);
+
+            if (profile) {
+                return profile;
+            }
+
+            return this.startProfile(profileId);
+        } catch (error) {
+            if (error.response && error.response.status === 404) {
+                return this.startProfile(profileId);
+            }
+
+            throw new Error(`OCTO_BROWSER_ERROR:: Failed to connect to profile: ${formatOctoError(error)}`);
         }
     }
 }

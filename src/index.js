@@ -19,7 +19,9 @@ const logger = createLogger(module);
 
         const neededProfileId = config.get('octoBrowser.profileId');
 
-        await octoBrowserApi.startProfile(neededProfileId);
+        const octoBrowserProfile = await octoBrowserApi.connectIfExistsCreateIfNot(neededProfileId);
+
+        logger.info(`Connected to OctoBrowser with profile: ${JSON.stringify(octoBrowserProfile)}`);
     } catch (error) {
         logger.error(`INITIALIZATION_ERROR:: Failed to start application: ${error.message}`);
 
