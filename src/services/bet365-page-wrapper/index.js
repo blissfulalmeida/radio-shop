@@ -67,7 +67,7 @@ class Bet365PageWrapper {
         } finally {
             setTimeout(() => {
                 this._poll();
-            }, 1000 * 60 * 1);
+            }, 1000 * 60 * 5);
         }
     }
 
@@ -128,9 +128,21 @@ class Bet365PageWrapper {
                 return;
             }
 
+            await bet365MyBetsPageHelper.waitForBetItemsContainerToAppear();
+
+            logger.info(`${this.cycleNumber}: Bet items container appeared`);
+
+            await bet365MyBetsPageHelper.expandCollapsedBets();
+
+            logger.info(`${this.cycleNumber}: Expanded collapsed bets`);
+
             const allBetsInnerHtml = await bet365MyBetsPageHelper.getAllBetsHtmlOnThePage();
 
-            fs.writeFileSync(path.resolve(__dirname, '..', '..', '..', 'crawled', `bets-${moment.utc().toISOString()}.html`), allBetsInnerHtml);
+            const fileName = `bets-${moment.utc().toISOString()}.html`;
+
+            fs.writeFileSync(path.resolve(__dirname, '..', '..', '..', 'crawled', fileName), allBetsInnerHtml);
+
+            logger.info(`${this.cycleNumber}: Saved all bets to ${fileName}`);
         } catch (error) {
             throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed to execute page action: ${error.message}`);
         }

@@ -1,4 +1,4 @@
-// const { delay, retriebleAsyncOperationExecutor } = require('../../components/util');
+const { delay } = require('../../components/util');
 
 class Bet365MyBetsPageHelper {
     constructor(page) {
@@ -61,12 +61,18 @@ class Bet365MyBetsPageHelper {
      */
     async clickOnAllBets() {
         try {
-            // await retriebleAsyncOperationExecutor({
-            //     operation: () => this.page.click('.myb-MyBetsHeader_Scroller > div[data-content="All"]', { delay: 100, timeout: 10000 }),
-            //     retries: 3,
-            //     delayBetweenRetries: 1000,
-            // });
-            await this.page.click('.myb-MyBetsHeader_Scroller > div[data-content="All"]', { delay: 100, timeout: 10000 });
+            const element = await this.page.waitForSelector('.myb-MyBetsHeader_Scroller > div[data-content="All"]', { visible: true, timeout: 10000 });
+
+            const box = await element.boundingBox();
+
+            if (box) {
+                await this.page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 10 });
+            }
+
+            await delay(Math.random() * 500 + 100);
+            await this.page.mouse.down();
+            await delay(Math.random() * 150 + 50);
+            await this.page.mouse.up();
         } catch (error) {
             throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed to clickOnAllBets: ${error.message}`);
         }
@@ -96,6 +102,48 @@ class Bet365MyBetsPageHelper {
             return emptyBetsContainerResult.isEmpty;
         } catch (error) {
             throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed to checkIfEmptyBetsContainerExists: ${error.message}`);
+        }
+    }
+
+    /**
+     * @returns {Promise<void>}
+     */
+    async waitForBetItemsContainerToAppear() {
+        try {
+            await this.page.waitForSelector('.myb-BetItemsContainer_BetItemsContainer', { timeout: 30000 })
+                .catch(() => { throw new Error('Failed to find myb-BetItemsContainer_BetItemsContainer'); });
+        } catch (error) {
+            throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed to waitForBetItemsContainerToAppear: ${error.message}`);
+        }
+    }
+
+    /**
+     * @returns {Promise<void>}
+     */
+    async expandCollapsedBets() {
+        try {
+            const betItems = await this.page.$$(
+                'div.myb-BetItemsContainer_BetItemsContainer > div.myb-OpenBetItem, div.myb-BetItemsContainer_BetItemsContainer > div.myb-SettledBetItem',
+            );
+
+            // eslint-disable-next-line no-restricted-syntax
+            for (const item of betItems) {
+                const classNames = await item.evaluate((el) => el.className);
+
+                if (classNames.includes('_DefaultCollapsed')) {
+                    const box = await item.boundingBox();
+
+                    if (box) {
+                        await this.page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 10 });
+                    }
+
+                    await delay(Math.random() * 500 + 100);
+
+                    await item.click();
+                }
+            }
+        } catch (error) {
+            throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed to expandCollapsedBets: ${error.message}`);
         }
     }
 
