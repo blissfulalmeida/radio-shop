@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path = require('path');
+const moment = require('moment');
 const config = require('config');
 const puppeteer = require('puppeteer-core');
 const { createLogger } = require('../../components/logger');
@@ -64,7 +67,7 @@ class Bet365PageWrapper {
         } finally {
             setTimeout(() => {
                 this._poll();
-            }, 1000 * 60 * 2);
+            }, 1000 * 60 * 1);
         }
     }
 
@@ -124,6 +127,10 @@ class Bet365PageWrapper {
 
                 return;
             }
+
+            const allBetsInnerHtml = await bet365MyBetsPageHelper.getAllBetsHtmlOnThePage();
+
+            fs.writeFileSync(path.resolve(__dirname, '..', '..', '..', 'crawled', `bets-${moment.utc().toISOString()}.html`), allBetsInnerHtml);
         } catch (error) {
             throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed to execute page action: ${error.message}`);
         }

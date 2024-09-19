@@ -1,4 +1,4 @@
-const { delay, retriebleAsyncOperationExecutor } = require('../../components/util');
+// const { delay, retriebleAsyncOperationExecutor } = require('../../components/util');
 
 class Bet365MyBetsPageHelper {
     constructor(page) {
@@ -61,11 +61,12 @@ class Bet365MyBetsPageHelper {
      */
     async clickOnAllBets() {
         try {
-            await retriebleAsyncOperationExecutor({
-                operation: () => this.page.click('.myb-MyBetsHeader_Scroller > div[data-content="All"]', { delay: 100, timeout: 10000 }),
-                retries: 3,
-                delayBetweenRetries: 1000,
-            });
+            // await retriebleAsyncOperationExecutor({
+            //     operation: () => this.page.click('.myb-MyBetsHeader_Scroller > div[data-content="All"]', { delay: 100, timeout: 10000 }),
+            //     retries: 3,
+            //     delayBetweenRetries: 1000,
+            // });
+            await this.page.click('.myb-MyBetsHeader_Scroller > div[data-content="All"]', { delay: 100, timeout: 10000 });
         } catch (error) {
             throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed to clickOnAllBets: ${error.message}`);
         }
@@ -95,6 +96,16 @@ class Bet365MyBetsPageHelper {
             return emptyBetsContainerResult.isEmpty;
         } catch (error) {
             throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed to checkIfEmptyBetsContainerExists: ${error.message}`);
+        }
+    }
+
+    async getAllBetsHtmlOnThePage() {
+        try {
+            const betsHtml = await this.page.$eval('.myb-BetItemsContainer_BetItemsContainer ', (betElement) => betElement.innerHTML);
+
+            return betsHtml;
+        } catch (error) {
+            throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed to getAllBetsHtmlOnThePage: ${error.message}`);
         }
     }
 }
