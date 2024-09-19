@@ -2,6 +2,6 @@ module.exports = {
     logLevel: 'info',
     octoBrowser: {
         baseUrl: 'http://localhost:58888',
-        profileId: '82dd23afacba402bb4b220dbc3607ff6',
+        profileId: 'f4b4e5ff2c66493c964105145a02a360',
     },
 };

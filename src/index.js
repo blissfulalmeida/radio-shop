@@ -15,10 +15,18 @@ const logger = createLogger(module);
 
         if (!isOctoRunning) {
             throw new Error('OctoBrowser is not running');
-        } else {
-            logger.info('OctoBrowser is running');
         }
+
+        const neededProfileId = config.get('octoBrowser.profileId');
+
+        await octoBrowserApi.startProfile(neededProfileId);
     } catch (error) {
-        console.error(error);
+        logger.error(`INITIALIZATION_ERROR:: Failed to start application: ${error.message}`);
+
+        process.exitCode = 1;
+
+        setTimeout(() => {
+            process.exit();
+        }, 500);
     }
 })();
