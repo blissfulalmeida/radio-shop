@@ -19,6 +19,7 @@ class Bet365PageWrapper {
         try {
             this.browser = await puppeteer.connect({
                 browserWSEndpoint: this.profile.ws_endpoint,
+                defaultViewport: null,
             });
 
             const pages = await this.browser.pages();
