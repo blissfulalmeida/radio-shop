@@ -25,6 +25,10 @@ class TelegramNotifier {
         }
     }
 
+    async sendAppLaunchedMessage() {
+        await this._sendTelegramMessage(`Account ${this.telegramAccount}\nApp launched`);
+    }
+
     async sendLoggedOutMessage() {
         await this._sendTelegramMessage(`Account ${this.telegramAccount}\nLogged out`);
     }

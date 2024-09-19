@@ -46,7 +46,7 @@ class Bet365PageWrapper {
 
             await this.page.goto(this.bet365MyBetsPage, { timeout: 30000, waitUntil: 'domcontentloaded' });
 
-            this.state = BET_365_STATE.READY;
+            this._changeState(BET_365_STATE.READY);
         } catch (error) {
             throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed to init: ${error.message}`);
         }
@@ -68,13 +68,15 @@ class Bet365PageWrapper {
         }
     }
 
+    _changeState(newState) {
+        logger.info(`Changing state from ${this.state} to ${newState}`);
+
+        this.state = newState;
+    }
+
     async _executePageAction() {
         try {
             this.cycleNumber += 1;
-
-            if (this.state !== BET_365_STATE.READY) {
-                logger.warn(`${this.cycleNumber}: Polling while not ready`);
-            }
 
             logger.info(`${this.cycleNumber}: Starting new cycle`);
 
@@ -84,17 +86,26 @@ class Bet365PageWrapper {
 
             logger.info(`${this.cycleNumber}: Page reloaded`);
 
-            const loggedOut = await bet365MyBetsPageHelper.checkLoggedOut();
+            await bet365MyBetsPageHelper.waitForPageHeaderToAppear();
 
-            logger.info(`${this.cycleNumber}: Logged out: ${loggedOut ? 'YES' : 'NO'}`);
+            const loggedIn = await bet365MyBetsPageHelper.checkLoggedIn();
 
-            if (loggedOut) {
-                this.state = BET_365_STATE.LOGGED_OUT;
+            logger.info(`${this.cycleNumber}: Logged in: ${loggedIn ? 'YES' : 'NO'}`);
 
-                this.telegramNotifier.sendLoggedOutMessage();
+            if (!loggedIn) {
+                // Do not send message if the state has not changed
+                if (this.state !== BET_365_STATE.LOGGED_OUT) {
+                    this._changeState(BET_365_STATE.LOGGED_OUT);
+
+                    this.telegramNotifier.sendLoggedOutMessage();
+                }
 
                 return;
             }
+
+            await bet365MyBetsPageHelper.waitForBetsHeaderToAppear();
+
+            logger.info(`${this.cycleNumber}: Bets header appeared`);
 
             await bet365MyBetsPageHelper.clickOnAllBets();
 
@@ -104,11 +115,11 @@ class Bet365PageWrapper {
 
             logger.info(`${this.cycleNumber}: Bets container appeared`);
 
-            const noBetsOnThePage = await bet365MyBetsPageHelper.checkIfEmptyBetsContainerExists();
+            const noBetsContainerExists = await bet365MyBetsPageHelper.checkIfEmptyBetsContainerExists();
 
-            logger.info(`${this.cycleNumber}: Page has some bets: ${noBetsOnThePage ? 'NO' : 'YES'}`);
+            logger.info(`${this.cycleNumber}: No bets container visible: ${noBetsContainerExists ? 'YES' : 'NO'}`);
 
-            if (noBetsOnThePage) {
+            if (noBetsContainerExists) {
                 logger.info(`${this.cycleNumber}: No bets found`);
 
                 return;

@@ -11,6 +11,7 @@ const logger = createLogger(module);
     try {
         logger.info(`Starting application. Partial config: ${JSON.stringify(_.omit(config))}`);
 
+        const telegramNotifier = new TelegramNotifier();
         const octoBrowserApi = new OctoBrowserApi();
 
         const isOctoRunning = await octoBrowserApi.checkOctoIsRunning();
@@ -25,12 +26,13 @@ const logger = createLogger(module);
 
         logger.info(`Connected to OctoBrowser with profile: ${JSON.stringify(octoBrowserProfile)}`);
 
-        const telegramNotifier = new TelegramNotifier();
         const bet365PageWrapper = new Bet365PageWrapper(octoBrowserProfile, telegramNotifier);
 
         await bet365PageWrapper.init();
 
         bet365PageWrapper.startIntervaledPolling();
+
+        telegramNotifier.sendAppLaunchedMessage();
     } catch (error) {
         logger.error(`INITIALIZATION_ERROR:: Failed to start application: ${error.message}`);
 

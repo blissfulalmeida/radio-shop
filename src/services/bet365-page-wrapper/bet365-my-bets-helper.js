@@ -1,4 +1,4 @@
-const { delay } = require('../../components/util');
+const { delay, retriebleAsyncOperationExecutor } = require('../../components/util');
 
 class Bet365MyBetsPageHelper {
     constructor(page) {
@@ -16,17 +16,29 @@ class Bet365MyBetsPageHelper {
         }
     }
 
+    async waitForPageHeaderToAppear() {
+        try {
+            await this.page.waitForSelector('.hm-MainHeaderWide', { timeout: 30000 })
+                .catch(() => { throw new Error('Failed to waitForPageHeaderToAppear'); });
+        } catch (error) {
+            throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed to waitForPageHeaderToAppear: ${error.message}`);
+        }
+    }
+
     /**
      * @returns {Promise<boolean>}
      */
-    async checkLoggedOut() {
+    async checkLoggedIn() {
         try {
-            // We check if the login button is present
-            const loggedInResult = await this.page.waitForSelector('.hm-MainHeaderRHSLoggedOutWide_Login ', { timeout: 5000 })
-                .then(() => ({ loggedOut: true }))
-                .catch(() => ({ loggedOut: false }));
+            const loggedInContainerSearchResult = await this.page.waitForSelector('.hm-MainHeaderRHSLoggedInWide', { timeout: 5000 })
+                .then(() => ({ exists: true }))
+                .catch(() => ({ exists: false }));
 
-            return loggedInResult.loggedOut;
+            const loggedOutContainerSearchResult = await this.page.waitForSelector('.hm-MainHeaderRHSLoggedOutWide_Login', { timeout: 5000 })
+                .then(() => ({ exists: true }))
+                .catch(() => ({ exists: false }));
+
+            return loggedInContainerSearchResult.exists === true && loggedOutContainerSearchResult.exists === false;
         } catch (error) {
             throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed to checkLoggedIn: ${error.message}`);
         }
@@ -35,14 +47,25 @@ class Bet365MyBetsPageHelper {
     /**
      * @returns {Promise<void>}
      */
-    async clickOnAllBets() {
+    async waitForBetsHeaderToAppear() {
         try {
             await this.page.waitForSelector('.myb-MyBetsHeader_Scroller', { timeout: 30000 })
                 .catch(() => { throw new Error('Failed to find myb-MyBetsHeader_Scroller'); });
+        } catch (error) {
+            throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed waiting for bets selection header to appear: ${error.message}`);
+        }
+    }
 
-            await delay(1000);
-
-            await this.page.click('.myb-MyBetsHeader_Scroller > div[data-content="All"]', { delay: 100 });
+    /**
+     * @returns {Promise<void>}
+     */
+    async clickOnAllBets() {
+        try {
+            await retriebleAsyncOperationExecutor({
+                operation: () => this.page.click('.myb-MyBetsHeader_Scroller > div[data-content="All"]', { delay: 100, timeout: 10000 }),
+                retries: 3,
+                delayBetweenRetries: 1000,
+            });
         } catch (error) {
             throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed to clickOnAllBets: ${error.message}`);
         }
