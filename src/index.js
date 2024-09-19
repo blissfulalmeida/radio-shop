@@ -29,6 +29,8 @@ const logger = createLogger(module);
         const bet365PageWrapper = new Bet365PageWrapper(octoBrowserProfile, telegramNotifier);
 
         await bet365PageWrapper.init();
+
+        bet365PageWrapper.startIntervaledPolling();
     } catch (error) {
         logger.error(`INITIALIZATION_ERROR:: Failed to start application: ${error.message}`);
 

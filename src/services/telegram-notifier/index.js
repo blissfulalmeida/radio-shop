@@ -26,7 +26,7 @@ class TelegramNotifier {
     }
 
     async sendLoggedOutMessage() {
-        await this._sendTelegramMessage(`Account ${this.telegramAccount} logged out`);
+        await this._sendTelegramMessage(`Account ${this.telegramAccount}\nLogged out`);
     }
 }
 
