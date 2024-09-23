@@ -30,8 +30,6 @@ const logger = createLogger(module);
 
         await bet365PageWrapper.init();
 
-        bet365PageWrapper.startIntervaledPolling();
-
         telegramNotifier.sendAppLaunchedMessage();
     } catch (error) {
         logger.error(`INITIALIZATION_ERROR:: Failed to start application: ${error.message}`);

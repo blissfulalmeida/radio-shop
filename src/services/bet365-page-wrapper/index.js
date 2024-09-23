@@ -36,6 +36,8 @@ class Bet365PageWrapper {
          * @type {puppeteer.Page}
          */
         this.page = null;
+        this.jobsQueue = [];
+        this.taskInProgress = false;
     }
 
     async init() {
@@ -51,6 +53,7 @@ class Bet365PageWrapper {
 
             this._changeState(BET_365_STATE.READY);
             this._startRealityCheckSolvingLoop();
+            this._startDataCrawlingLoop();
         } catch (error) {
             throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed to init: ${error.message}`);
         }
@@ -61,11 +64,77 @@ class Bet365PageWrapper {
     }
 
     async _realityCheckTick() {
-        await this._trySolveRealityCheck();
+        try {
+            await this._executeAsyncJob(() => this._trySolveRealityCheck()
+                .catch((error) => {
+                    logger.error(`REALITY_CHECK_ERROR:: Failed to poll reality check: ${error.message}`);
+                }));
+        } finally {
+            setTimeout(() => {
+                this._realityCheckTick();
+            }, 1000 * 5);
+        }
+    }
+
+    _startDataCrawlingLoop() {
+        this._dataCrawlingTick();
+    }
+
+    async _dataCrawlingTick() {
+        try {
+            await this._executeAsyncJob(() => this._executePageAction()
+                .catch((error) => {
+                    logger.error(`BET365_PAGE_WRAPPER_ERROR:: Failed to poll ${this.cycleNumber}: ${error.message}`);
+                }));
+        } finally {
+            setTimeout(() => {
+                this._dataCrawlingTick();
+            }, 1000 * 60 * 5);
+        }
+    }
+
+    _executeAsyncJob(asyncJob) {
+        let resolve;
+
+        const promise = new Promise((res) => {
+            resolve = res;
+        });
+
+        this.jobsQueue.push({
+            asyncJob,
+            resolve,
+        });
 
         setTimeout(() => {
-            this._realityCheckTick();
-        }, 1000 * 5);
+            this._checkTasksQueue();
+        }, 0);
+
+        return promise;
+    }
+
+    _checkTasksQueue() {
+        if (this.jobsQueue.length === 0 || this.taskInProgress) {
+            return;
+        }
+
+        this.taskInProgress = true;
+
+        const { asyncJob, resolve } = this.jobsQueue.shift();
+
+        asyncJob()
+            .then(() => {
+                resolve();
+
+                this.taskInProgress = false;
+
+                this._checkTasksQueue();
+            });
+    }
+
+    _changeState(newState) {
+        logger.info(`Changing state from ${this.state} to ${newState}`);
+
+        this.state = newState;
     }
 
     async _trySolveRealityCheck() {
@@ -75,6 +144,8 @@ class Bet365PageWrapper {
             const realityCheckFrame = frames.find((frame) => frame.url().includes('members.bet365.es'));
 
             if (realityCheckFrame) {
+                logger.info('Found reality check frame');
+
                 /**
                  * @type {puppeteer.ElementHandle<HTMLButtonElement>[]}
                  */
@@ -97,41 +168,17 @@ class Bet365PageWrapper {
                         await this.page.mouse.down();
                         await this.page.mouse.up();
 
-                        console.log('Button clicked as a human!');
+                        logger.info('Button clicked as a human!');
                     } else {
-                        console.log("Failed to get the button's position.");
+                        logger.info("Failed to get the button's position.");
                     }
                 } else {
-                    console.log('No button found.');
+                    logger.info('No button found.');
                 }
-            } else {
-                console.log('No reality check frame found.');
             }
         } catch (error) {
             logger.error(`REALITY_CHECK_ERROR:: Failed to solve reality check: ${error.message}`);
         }
-    }
-
-    startIntervaledPolling() {
-        this._poll();
-    }
-
-    async _poll() {
-        try {
-            await this._executePageAction();
-        } catch (error) {
-            logger.error(`BET365_PAGE_WRAPPER_ERROR:: Failed to poll ${this.cycleNumber}: ${error.message}`);
-        } finally {
-            setTimeout(() => {
-                this._poll();
-            }, 1000 * 60 * 5);
-        }
-    }
-
-    _changeState(newState) {
-        logger.info(`Changing state from ${this.state} to ${newState}`);
-
-        this.state = newState;
     }
 
     async _executePageAction() {
