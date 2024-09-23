@@ -1,16 +1,17 @@
 const { delay } = require('../../components/util');
 
 class Bet365MyBetsPageHelper {
-    constructor(page) {
+    constructor(page, baseUrl) {
         /**
          * @type {import('puppeteer-core').Page}
          */
         this.page = page;
+        this.baseUrl = baseUrl;
     }
 
-    async reload() {
+    async goToPage() {
         try {
-            await this.page.reload({ timeout: 30000, waitUntil: 'networkidle2' });
+            await this.page.goto(this.baseUrl, { timeout: 30000, waitUntil: 'networkidle2' });
         } catch (error) {
             throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed to reload: ${error.message}`);
         }
@@ -83,10 +84,10 @@ class Bet365MyBetsPageHelper {
      */
     async waitForBetsContainerToAppear() {
         try {
-            await this.page.waitForSelector('.myb-MyBets_Container', { timeout: 30000 })
-                .catch(() => { throw new Error('Failed to find myb-MyBets_Container '); });
+            await this.page.waitForSelector('.myb-BetItemsContainer', { timeout: 30000 })
+                .catch(() => { throw new Error('Failed to find myb-BetItemsContainer '); });
         } catch (error) {
-            throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed to waitForBetsToAppear: ${error.message}`);
+            throw new Error(`BET365_PAGE_WRAPPER_ERROR:: waitForBetsContainerToAppear failed: ${error.message}`);
         }
     }
 
@@ -95,13 +96,13 @@ class Bet365MyBetsPageHelper {
      */
     async checkIfEmptyBetsContainerExists() {
         try {
-            const emptyBetsContainerResult = await this.page.waitForSelector('.myb-BetItemsContainer_EmptyMessage', { timeout: 5000 })
+            const emptyBetsContainerResult = await this.page.waitForSelector('.BetItemsContainer_EmptyMessage', { timeout: 5000 })
                 .then(() => ({ isEmpty: true }))
                 .catch(() => ({ isEmpty: false }));
 
             return emptyBetsContainerResult.isEmpty;
         } catch (error) {
-            throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed to checkIfEmptyBetsContainerExists: ${error.message}`);
+            throw new Error(`BET365_PAGE_WRAPPER_ERROR:: checkIfEmptyBetsContainerExists failed: ${error.message}`);
         }
     }
 
@@ -110,10 +111,10 @@ class Bet365MyBetsPageHelper {
      */
     async waitForBetItemsContainerToAppear() {
         try {
-            await this.page.waitForSelector('.myb-BetItemsContainer_BetItemsContainer', { timeout: 30000 })
+            await this.page.waitForSelector('.myb-BetItemsContainer_Container', { timeout: 30000 })
                 .catch(() => { throw new Error('Failed to find myb-BetItemsContainer_BetItemsContainer'); });
         } catch (error) {
-            throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed to waitForBetItemsContainerToAppear: ${error.message}`);
+            throw new Error(`BET365_PAGE_WRAPPER_ERROR:: waitForBetItemsContainerToAppear failed: ${error.message}`);
         }
     }
 
@@ -123,7 +124,7 @@ class Bet365MyBetsPageHelper {
     async expandCollapsedBets() {
         try {
             const betItems = await this.page.$$(
-                'div.myb-BetItemsContainer_BetItemsContainer > div.myb-OpenBetItem, div.myb-BetItemsContainer_BetItemsContainer > div.myb-SettledBetItem',
+                'div.myb-BetItemsContainer_Container > div.myb-OpenBetItem, div.myb-BetItemsContainer_Container > div.myb-SettledBetItem',
             );
 
             // eslint-disable-next-line no-restricted-syntax
@@ -149,11 +150,11 @@ class Bet365MyBetsPageHelper {
 
     async getAllBetsHtmlOnThePage() {
         try {
-            const betsHtml = await this.page.$eval('.myb-BetItemsContainer_BetItemsContainer ', (betElement) => betElement.innerHTML);
+            const betsHtml = await this.page.$eval('.myb-BetItemsContainer_Container', (betElement) => betElement.innerHTML);
 
             return betsHtml;
         } catch (error) {
-            throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed to getAllBetsHtmlOnThePage: ${error.message}`);
+            throw new Error(`BET365_PAGE_WRAPPER_ERROR:: getAllBetsHtmlOnThePage failed: ${error.message}`);
         }
     }
 }

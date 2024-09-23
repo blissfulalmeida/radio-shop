@@ -2,6 +2,30 @@ const fs = require('fs');
 const path = require('path');
 const cheerio = require('cheerio');
 
+class SettledBetsCanonocalizer {
+    constructor(cheerioNode) {
+        this.cheerioNode = cheerioNode;
+    }
+
+    canonicalize() {
+        return {
+
+        };
+    }
+}
+
+class OpenBetCanonicalizer {
+    constructor(cheerioNode) {
+        this.cheerioNode = cheerioNode;
+    }
+
+    canonicalize() {
+        return {
+
+        };
+    }
+}
+
 function extractBetData(betElement) {
     const betDict = {};
 
@@ -52,11 +76,39 @@ function extractBetData(betElement) {
 }
 
 // Example usage:
-const html = fs.readFileSync(path.resolve(__dirname, '..', 'assets', 'bet365', 'bet-open.html'), 'utf8');
+const html = fs.readFileSync(path.resolve(__dirname, '..', 'crawled', 'bets-2024-09-19T10:35:50.822Z.html'), 'utf8');
 const $ = cheerio.load(html);
+const betElements = $('.myb-OpenBetItem, .myb-SettledBetItem');
 
-// Assuming there's a specific bet element
-const betElement = $('.myb-OpenBetItem'); // Adjust as needed
-const betData = extractBetData(betElement);
+// iterate and print class lists
+const data = Array.from(betElements).map((el) => {
+    try {
+        const $el = $(el);
+        const classAttribute = $el.attr('class');
 
-console.log(betData);
+        if (!classAttribute) {
+            return { status: 'error', reason: 'No class attribute found' };
+        }
+
+        const splittedList = classAttribute.split(' ');
+
+        const setteledItem = splittedList.includes('myb-SettledBetItem');
+        const openItem = splittedList.includes('myb-OpenBetItem');
+
+        if (setteledItem && !openItem) {
+            const cannoicalData = new SettledBetsCanonocalizer($el).canonicalize();
+
+            return { status: 'success', data: cannoicalData };
+        } if (openItem && !setteledItem) {
+            const canonicalData = new OpenBetCanonicalizer($el).canonicalize();
+
+            return { status: 'success', data: canonicalData };
+        }
+
+        return { status: 'error', reason: 'Unknown class list' };
+    } catch (error) {
+        return { status: 'error', reason: error.message };
+    }
+});
+
+console.log(data);

@@ -50,9 +50,28 @@ class Bet365PageWrapper {
             await this.page.goto(this.bet365MyBetsPage, { timeout: 30000, waitUntil: 'domcontentloaded' });
 
             this._changeState(BET_365_STATE.READY);
+            this._startIntervaledFramesPolling();
         } catch (error) {
             throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed to init: ${error.message}`);
         }
+    }
+
+    _startIntervaledFramesPolling() {
+        setInterval(async () => {
+            try {
+                const frames = await this.page.frames();
+
+                logger.info(`FRAMES: There are ${frames.length} frames`);
+
+                if (frames.length > 1) {
+                    frames.forEach((frame, index) => {
+                        logger.info(`Frame ${index}: ${frame.url()}`);
+                    });
+                }
+            } catch (error) {
+                logger.error(`FRAMES_ERROR:: Failed to poll frames: ${error.message}`);
+            }
+        }, 1000 * 10);
     }
 
     startIntervaledPolling() {
@@ -83,9 +102,9 @@ class Bet365PageWrapper {
 
             logger.info(`${this.cycleNumber}: Starting new cycle`);
 
-            const bet365MyBetsPageHelper = new Bet365MyBetsPageHelper(this.page);
+            const bet365MyBetsPageHelper = new Bet365MyBetsPageHelper(this.page, this.bet365MyBetsPage);
 
-            await bet365MyBetsPageHelper.reload();
+            await bet365MyBetsPageHelper.goToPage();
 
             logger.info(`${this.cycleNumber}: Page reloaded`);
 
