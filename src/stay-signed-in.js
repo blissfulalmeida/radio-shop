@@ -44,10 +44,6 @@ const logger = createLogger(module);
 
         const realityCheckFrame = frames.find((frame) => frame.url().includes('members.bet365.es'));
 
-        // const frameHtml = await realityCheckFrame.content();
-
-        // fs.writeFileSync(path.join(__dirname, 'reality-check-frame.html'), frameHtml);
-
         if (realityCheckFrame) {
             /**
              * @type {puppeteer.ElementHandle<HTMLButtonElement>[]}

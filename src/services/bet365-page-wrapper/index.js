@@ -50,28 +50,66 @@ class Bet365PageWrapper {
             await this.page.goto(this.bet365MyBetsPage, { timeout: 30000, waitUntil: 'domcontentloaded' });
 
             this._changeState(BET_365_STATE.READY);
-            this._startIntervaledFramesPolling();
+            this._startRealityCheckSolvingLoop();
         } catch (error) {
             throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed to init: ${error.message}`);
         }
     }
 
-    _startIntervaledFramesPolling() {
-        setInterval(async () => {
-            try {
-                const frames = await this.page.frames();
+    _startRealityCheckSolvingLoop() {
+        this._realityCheckTick();
+    }
 
-                logger.info(`FRAMES: There are ${frames.length} frames`);
+    async _realityCheckTick() {
+        await this._trySolveRealityCheck();
 
-                if (frames.length > 1) {
-                    frames.forEach((frame, index) => {
-                        logger.info(`Frame ${index}: ${frame.url()}`);
-                    });
+        setTimeout(() => {
+            this._realityCheckTick();
+        }, 1000 * 5);
+    }
+
+    async _trySolveRealityCheck() {
+        try {
+            const frames = await this.page.frames();
+
+            const realityCheckFrame = frames.find((frame) => frame.url().includes('members.bet365.es'));
+
+            if (realityCheckFrame) {
+                /**
+                 * @type {puppeteer.ElementHandle<HTMLButtonElement>[]}
+                 */
+                const buttonHandles = await realityCheckFrame.$$('button');
+
+                const stayLoggedInButton = buttonHandles.find(async (buttonHandle) => {
+                    const text = await buttonHandle.evaluate((node) => node.innerText);
+
+                    return text.includes('Stay Logged In');
+                });
+
+                if (stayLoggedInButton) {
+                    const boundingBox = await stayLoggedInButton.boundingBox();
+
+                    if (boundingBox) {
+                        await this.page.mouse.move(
+                            boundingBox.x + boundingBox.width / 2,
+                            boundingBox.y + boundingBox.height / 2,
+                        );
+                        await this.page.mouse.down();
+                        await this.page.mouse.up();
+
+                        console.log('Button clicked as a human!');
+                    } else {
+                        console.log("Failed to get the button's position.");
+                    }
+                } else {
+                    console.log('No button found.');
                 }
-            } catch (error) {
-                logger.error(`FRAMES_ERROR:: Failed to poll frames: ${error.message}`);
+            } else {
+                console.log('No reality check frame found.');
             }
-        }, 1000 * 10);
+        } catch (error) {
+            logger.error(`REALITY_CHECK_ERROR:: Failed to solve reality check: ${error.message}`);
+        }
     }
 
     startIntervaledPolling() {
