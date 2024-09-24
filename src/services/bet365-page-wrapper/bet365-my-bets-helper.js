@@ -1,4 +1,7 @@
 const { delay } = require('../../components/util');
+const { createLogger } = require('../../components/logger');
+
+const logger = createLogger(module);
 
 class Bet365MyBetsPageHelper {
     constructor(page, baseUrl) {
@@ -11,7 +14,17 @@ class Bet365MyBetsPageHelper {
 
     async goToPage() {
         try {
-            await this.page.goto(this.baseUrl, { timeout: 30000, waitUntil: 'networkidle2' });
+            const currentUrl = this.page.url();
+
+            if (currentUrl !== this.baseUrl) {
+                logger.info(`Current URL is different. Navigating to ${this.baseUrl}`);
+
+                await this.page.goto(this.baseUrl, { timeout: 30000, waitUntil: 'networkidle2' });
+            } else {
+                logger.info('Current URL is the same. Reloading the page.');
+
+                await this.page.reload({ timeout: 30000, waitUntil: 'networkidle0' });
+            }
         } catch (error) {
             throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed to reload: ${error.message}`);
         }
