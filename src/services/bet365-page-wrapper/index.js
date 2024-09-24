@@ -3,8 +3,10 @@ const path = require('path');
 const moment = require('moment');
 const config = require('config');
 const puppeteer = require('puppeteer-core');
+const cheerio = require('cheerio');
 const { createLogger } = require('../../components/logger');
 const { Bet365MyBetsPageHelper } = require('./bet365-my-bets-helper');
+const { beautifyHTML } = require('../../components/util');
 
 const logger = createLogger(module);
 
@@ -242,11 +244,23 @@ class Bet365PageWrapper {
 
             const allBetsInnerHtml = await bet365MyBetsPageHelper.getAllBetsHtmlOnThePage();
 
-            const fileName = `bets-${moment.utc().toISOString()}.html`;
+            const $ = cheerio.load(allBetsInnerHtml);
 
-            fs.writeFileSync(path.resolve(__dirname, '..', '..', '..', 'crawled', fileName), allBetsInnerHtml);
+            const betItems = $('div.myb-OpenBetItem, div.myb-SettledBetItem');
 
-            logger.info(`${this.cycleNumber}: Saved all bets to ${fileName}`);
+            const folderName = `bets-${moment.utc().toISOString()}`;
+            const folderPath = path.resolve(__dirname, '..', '..', '..', 'crawled', folderName);
+
+            fs.mkdirSync(folderPath);
+
+            Array.from(betItems).forEach((betElement, index) => {
+                const betHtml = $(betElement).html();
+                const beautifiedTtml = beautifyHTML(betHtml);
+
+                fs.writeFileSync(path.join(folderPath, `${index}.html`), beautifiedTtml);
+            });
+
+            logger.info(`${this.cycleNumber}: Saved all bets to ${folderName}`);
         } catch (error) {
             throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed to execute page action: ${error.message}`);
         }
