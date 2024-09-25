@@ -61,6 +61,7 @@ class Bet365PageWrapper {
             this._changeState(BET_365_STATE.READY);
             this._startRealityCheckSolvingLoop();
             this._startDataCrawlingLoop();
+            this._startLeanDataCrawlingLoop();
         } catch (error) {
             throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed to init: ${error.message}`);
         }
@@ -97,6 +98,23 @@ class Bet365PageWrapper {
             setTimeout(() => {
                 this._dataCrawlingTick();
             }, 1000 * 60 * 5);
+        }
+    }
+
+    _startLeanDataCrawlingLoop() {
+        this._leanDataCrawlingTick();
+    }
+
+    async _leanDataCrawlingTick() {
+        try {
+            await this._executeAsyncJob(() => this._executeLeanPageAction()
+                .catch((error) => {
+                    logger.error(`BET365_PAGE_WRAPPER_ERROR:: Failed to poll ${this.cycleNumber}: ${error.message}`);
+                }));
+        } finally {
+            setTimeout(() => {
+                this._leanDataCrawlingTick();
+            }, 1000);
         }
     }
 
@@ -201,6 +219,98 @@ class Bet365PageWrapper {
             await bet365MyBetsPageHelper.goToPage();
 
             logger.info(`${this.cycleNumber}: Page reloaded`);
+
+            await bet365MyBetsPageHelper.waitForPageHeaderToAppear();
+
+            const loggedIn = await bet365MyBetsPageHelper.checkLoggedIn();
+
+            logger.info(`${this.cycleNumber}: Logged in: ${loggedIn ? 'YES' : 'NO'}`);
+
+            if (!loggedIn) {
+                // Do not send message if the state has not changed
+                if (this.state !== BET_365_STATE.LOGGED_OUT) {
+                    this._changeState(BET_365_STATE.LOGGED_OUT);
+                }
+
+                return;
+            }
+
+            await bet365MyBetsPageHelper.waitForBetsHeaderToAppear();
+
+            logger.info(`${this.cycleNumber}: Bets header appeared`);
+
+            await bet365MyBetsPageHelper.clickOnAllBets();
+
+            logger.info(`${this.cycleNumber}: Clicked on all bets`);
+
+            await bet365MyBetsPageHelper.waitForBetsContainerToAppear();
+
+            logger.info(`${this.cycleNumber}: Bets container appeared`);
+
+            const noBetsContainerExists = await bet365MyBetsPageHelper.checkIfEmptyBetsContainerExists();
+
+            logger.info(`${this.cycleNumber}: No bets container visible: ${noBetsContainerExists ? 'YES' : 'NO'}`);
+
+            if (noBetsContainerExists) {
+                logger.info(`${this.cycleNumber}: No bets found`);
+
+                return;
+            }
+
+            await bet365MyBetsPageHelper.waitForBetItemsContainerToAppear();
+
+            logger.info(`${this.cycleNumber}: Bet items container appeared`);
+
+            await bet365MyBetsPageHelper.expandCollapsedBets();
+
+            logger.info(`${this.cycleNumber}: Expanded collapsed bets`);
+
+            const allBetsInnerHtml = await bet365MyBetsPageHelper.getAllBetsHtmlOnThePage();
+
+            const $ = cheerio.load(allBetsInnerHtml);
+
+            const betItems = $('div.myb-OpenBetItem, div.myb-SettledBetItem');
+
+            const folderName = `bets-${moment.utc().toISOString()}`;
+            const folderPath = path.resolve(__dirname, '..', '..', '..', 'crawled', folderName);
+
+            fs.mkdirSync(folderPath);
+
+            const openBets = [];
+
+            Array.from(betItems).forEach((betElement, index) => {
+                const betHtml = $.html(betElement);
+                const beautifiedHtml = beautifyHTML(betHtml);
+
+                fs.writeFileSync(path.join(folderPath, `${index}.html`), beautifiedHtml);
+
+                const className = betElement.attribs.class || '';
+
+                if (className.includes('myb-OpenBetItem')) {
+                    const extractor = new OpenBetDataExtractor(betElement);
+                    const betData = extractor.extractBetData();
+
+                    if (betData) {
+                        openBets.push(betData);
+                    }
+                }
+            });
+
+            this.decisionEngine.handleFetchedOpenBets(openBets);
+
+            logger.info(`${this.cycleNumber}: Saved all bets to ${folderName}`);
+        } catch (error) {
+            throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed to execute page action: ${error.message}`);
+        }
+    }
+
+    async _executeLeanPageAction() {
+        try {
+            this.cycleNumber += 1;
+
+            logger.info(`${this.cycleNumber}: Starting new cycle (Lean)`);
+
+            const bet365MyBetsPageHelper = new Bet365MyBetsPageHelper(this.page, this.bet365MyBetsPage);
 
             await bet365MyBetsPageHelper.waitForPageHeaderToAppear();
 
