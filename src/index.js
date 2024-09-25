@@ -32,7 +32,7 @@ const validateConfig = () => {
 
         logger.info(`Starting application. Partial config: ${JSON.stringify(_.omit(config, []))}`);
 
-        const storageDirectory = path.resolve(__dirname, '', 'db');
+        const storageDirectory = path.resolve(__dirname, '..', 'db');
         fs.mkdirSync(storageDirectory, { recursive: true });
 
         const storage = new SimpleFileBasedStorage(path.resolve(storageDirectory, `${config.get('bet365.account')}.json`));

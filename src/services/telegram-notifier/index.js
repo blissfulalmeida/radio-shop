@@ -8,7 +8,7 @@ class TelegramNotifier {
     constructor() {
         this.telegramBotId = config.get('telegram.botId');
         this.telegramChatId = config.get('telegram.chatId');
-        this.telegramAccount = config.get('bet365.account');
+        this.bet365Account = config.get('bet365.account');
     }
 
     /**
@@ -18,7 +18,7 @@ class TelegramNotifier {
         try {
             await axios({
                 method: 'get',
-                url: `https://api.telegram.org/bot${this.telegramBotId}/sendMessage?chat_id=${this.telegramChatId}&text=${message}`,
+                url: `https://api.telegram.org/bot${this.telegramBotId}/sendMessage?chat_id=${this.telegramChatId}&text=${encodeURIComponent(message)}`,
             });
         } catch (error) {
             logger.error(`TELEGRAM_NOTIFIER_ERROR:: Failed to send message: ${error.message}`);
@@ -26,18 +26,20 @@ class TelegramNotifier {
     }
 
     async sendAppLaunchedMessage() {
-        await this._sendTelegramMessage(`Account ${this.telegramAccount}\nApp launched`);
+        await this._sendTelegramMessage(`#${this.bet365Account}\nApp launched`);
     }
 
     async sendLoggedOutMessage() {
-        await this._sendTelegramMessage(`Account ${this.telegramAccount}\nLogged out`);
+        await this._sendTelegramMessage(`#${this.bet365Account}\nLogged out`);
     }
 
     /**
      * @param {BetData} bet
      */
     async sendNewBetMessage(bet) {
-        await this._sendTelegramMessage(`Account ${this.telegramAccount}\nNew bet: ${JSON.stringify(bet)}`);
+        const formattedbetMessage = `Team 1: ${bet.team1Name || '-'}\nTeam 2: ${bet.team2Name || '-'}\nMarket: ${bet.market || '-'}\nSide: ${bet.side || '-'}\nStake: ${bet.stake || '-'}\nOdd: ${bet.odd || '-'}`;
+
+        await this._sendTelegramMessage(`#${this.bet365Account}\nNew bet:\n${formattedbetMessage}`);
     }
 }
 
