@@ -7,6 +7,7 @@ const cheerio = require('cheerio');
 const { createLogger } = require('../../components/logger');
 const { Bet365MyBetsPageHelper } = require('./bet365-my-bets-helper');
 const { beautifyHTML } = require('../../components/util');
+const { OpenBetDataExtractor } = require('./open-bet-data-extractor');
 
 const logger = createLogger(module);
 
@@ -19,11 +20,11 @@ const BET_365_STATE = {
 class Bet365PageWrapper {
     /**
      * @param {Profile} profile
-     * @param {import('../telegram-notifier').TelegramNotifier} telegramNotifier
+     * @param {import('../decision-engine').DecisionEngine} decisionEngine
      */
-    constructor(profile, telegramNotifier) {
+    constructor(profile, decisionEngine) {
         this.profile = profile;
-        this.telegramNotifier = telegramNotifier;
+        this.decisionEngine = decisionEngine;
 
         this.state = BET_365_STATE.IDLE;
         this.bet365MyBetsPage = config.get('bet365.myBetsPage');
@@ -143,9 +144,11 @@ class Bet365PageWrapper {
     }
 
     _changeState(newState) {
-        logger.info(`Changing state from ${this.state} to ${newState}`);
+        const currentState = this.state;
 
         this.state = newState;
+
+        this.decisionEngine.handleStateChange(currentState, newState);
     }
 
     async _trySolveRealityCheck() {
@@ -214,8 +217,6 @@ class Bet365PageWrapper {
                 // Do not send message if the state has not changed
                 if (this.state !== BET_365_STATE.LOGGED_OUT) {
                     this._changeState(BET_365_STATE.LOGGED_OUT);
-
-                    this.telegramNotifier.sendLoggedOutMessage();
                 }
 
                 return;
@@ -262,12 +263,27 @@ class Bet365PageWrapper {
 
             fs.mkdirSync(folderPath);
 
+            const openBets = [];
+
             Array.from(betItems).forEach((betElement, index) => {
                 const betHtml = $.html(betElement);
-                const beautifiedTtml = beautifyHTML(betHtml);
+                const beautifiedHtml = beautifyHTML(betHtml);
 
-                fs.writeFileSync(path.join(folderPath, `${index}.html`), beautifiedTtml);
+                fs.writeFileSync(path.join(folderPath, `${index}.html`), beautifiedHtml);
+
+                const className = betElement.attribs.class || '';
+
+                if (className.includes('myb-OpenBetItem')) {
+                    const extractor = new OpenBetDataExtractor(betElement);
+                    const betData = extractor.extractBetData();
+
+                    if (betData) {
+                        openBets.push(betData);
+                    }
+                }
             });
+
+            this.decisionEngine.handleFetchedOpenBets(openBets);
 
             logger.info(`${this.cycleNumber}: Saved all bets to ${folderName}`);
         } catch (error) {

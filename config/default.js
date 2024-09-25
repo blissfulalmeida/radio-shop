@@ -2,7 +2,7 @@ module.exports = {
     logLevel: 'info',
     octoBrowser: {
         baseUrl: 'http://localhost:58888',
-        profileId: 'f4b4e5ff2c66493c964105145a02a360',
+        profileId: '77ace08cac1c4ee6b487aac9929c6dd7',
     },
     bet365: {
         myBetsPage: 'https://www.bet365.es/#/MB/',

@@ -8,8 +8,7 @@ const $ = cheerio.load(plainHtmlText);
 const bets = $('div.myb-OpenBetItem, div.myb-SettledBetItem');
 
 Array.from(bets).forEach((betElement, index) => {
+    console.log(betElement.attribs.class);
     const betHtml = $.html(betElement);
     const beautifiedBetHtml = beautifyHTML(betHtml);
-
-    fs.writeFileSync(path.join(__dirname, `bet-${index}.beautified.html`), beautifiedBetHtml);
 });

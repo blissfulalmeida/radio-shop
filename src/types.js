@@ -30,3 +30,16 @@
 // #endregion
 
 // #endregion
+
+// #region Other
+/**
+ * @typedef {Object} BetData
+ * @property {string} key
+ * @property {string} stake
+ * @property {string} side
+ * @property {string} market
+ * @property {string} team1Name
+ * @property {string} team2Name
+ * @property {string} odd
+ */
+// #endregion
