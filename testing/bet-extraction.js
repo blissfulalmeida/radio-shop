@@ -26,65 +26,9 @@ class OpenBetCanonicalizer {
     }
 }
 
-function extractBetData(betElement) {
-    const betDict = {};
-
-    // Extracting stake
-    betDict.stake = betElement.find('.myb-OpenBetItem_StakeDesc').text().trim();
-
-    // Extracting side (team names)
-    const sides = betElement.find('.myb-BetParticipant_ParticipantSpan');
-    if (sides.length === 2) {
-        betDict.side = `${sides.eq(0).text().trim()}, ${sides.eq(1).text().trim()}`;
-    } else {
-        betDict.side = sides.eq(0).text().trim();
-    }
-
-    // Extracting market description
-    const markets = betElement.find('.myb-BetParticipant_MarketDescription');
-    if (markets.length === 2) {
-        betDict.market = `${markets.eq(0).text().trim()}, ${markets.eq(1).text().trim()}`;
-    } else {
-        betDict.market = markets.eq(0).text().trim();
-    }
-
-    // Extracting fixture (match names)
-    const fixtures = betElement.find('.myb-BetParticipant_FixtureName');
-    if (fixtures.length === 2) {
-        betDict.fixture = `${fixtures.eq(0).text().trim()}, ${fixtures.eq(1).text().trim()}`;
-    } else {
-        betDict.fixture = fixtures.eq(0).text().trim();
-    }
-
-    // Extracting odds
-    const odds = betElement.find('.myb-BetParticipant_HeaderOdds');
-    if (odds.length === 2) {
-        betDict.odd = `${odds.eq(0).text().trim()}, ${odds.eq(1).text().trim()}`;
-    } else {
-        betDict.odd = odds.eq(0).text().trim();
-    }
-
-    // Extracting score, if available
-    const score = betElement.find('.myb-OpenBetScores_Score');
-    betDict.score = score.length ? score.text().trim() : '';
-
-    // Extracting time, if available
-    const time = betElement.find('.myb-OpenBetScores_InPlayTime');
-    betDict.time = time.length ? time.text().trim() : '';
-
-    return betDict;
-}
-
-// Example usage:
-const html = fs.readFileSync(path.resolve(__dirname, '..', 'crawled', 'bets-2024-09-19T10:35:50.822Z.html'), 'utf8');
-const $ = cheerio.load(html);
-const betElements = $('.myb-OpenBetItem, .myb-SettledBetItem');
-
-// iterate and print class lists
-const data = Array.from(betElements).map((el) => {
+const extractData = (cheerioElement) => {
     try {
-        const $el = $(el);
-        const classAttribute = $el.attr('class');
+        const classAttribute = el.attr('class');
 
         if (!classAttribute) {
             return { status: 'error', reason: 'No class attribute found' };
@@ -105,10 +49,50 @@ const data = Array.from(betElements).map((el) => {
             return { status: 'success', data: canonicalData };
         }
 
-        return { status: 'error', reason: 'Unknown class list' };
+        const betData = extractBetData($el);
+
+        return { status: 'success', data: betData };
     } catch (error) {
         return { status: 'error', reason: error.message };
     }
-});
+};
 
-console.log(data);
+/**
+ * @param {cheerio.Cheerio<Element>} betElement
+ */
+function extractBetData(betElement) {
+    const betDict = {};
+
+    betDict.stake = betElement.find('.myb-OpenBetItem_StakeDesc').text().trim();
+
+    const sides = betElement.find('.myb-BetParticipant_ParticipantSpan');
+    if (sides.length === 2) {
+        betDict.side = `${sides.eq(0).text().trim()}, ${sides.eq(1).text().trim()}`;
+    } else {
+        betDict.side = sides.eq(0).text().trim();
+    }
+
+    const markets = betElement.find('.myb-BetParticipant_MarketDescription');
+    if (markets.length === 2) {
+        betDict.market = `${markets.eq(0).text().trim()}, ${markets.eq(1).text().trim()}`;
+    } else {
+        betDict.market = markets.eq(0).text().trim();
+    }
+
+    const team1Name = betElement.find('.myb-BetParticipant_Team1Name');
+
+    const odds = betElement.find('.myb-BetParticipant_HeaderOdds');
+    if (odds.length === 2) {
+        betDict.odd = `${odds.eq(0).text().trim()}, ${odds.eq(1).text().trim()}`;
+    } else {
+        betDict.odd = odds.eq(0).text().trim();
+    }
+
+    return betDict;
+}
+
+// Example usage:
+const html = fs.readFileSync(path.resolve(__dirname, '..', 'crawled/bets-2024-09-24T13:12:51.909Z/0.html'), 'utf8');
+const $ = cheerio.load(html);
+
+console.log(extractBetData($('.myb-OpenBetItem')));

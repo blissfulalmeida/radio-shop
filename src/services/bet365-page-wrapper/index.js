@@ -51,6 +51,15 @@ class Bet365PageWrapper {
 
             this.page = await this.browser.newPage();
 
+            const pages = await this.browser.pages();
+
+            // eslint-disable-next-line no-restricted-syntax
+            for (const p of pages) {
+                if (p !== this.page) {
+                    await p.close();
+                }
+            }
+
             await this.page.goto(this.bet365MyBetsPage, { timeout: 30000, waitUntil: 'domcontentloaded' });
 
             this._changeState(BET_365_STATE.READY);
@@ -254,7 +263,7 @@ class Bet365PageWrapper {
             fs.mkdirSync(folderPath);
 
             Array.from(betItems).forEach((betElement, index) => {
-                const betHtml = $(betElement).html();
+                const betHtml = $.html(betElement);
                 const beautifiedTtml = beautifyHTML(betHtml);
 
                 fs.writeFileSync(path.join(folderPath, `${index}.html`), beautifiedTtml);
