@@ -11,18 +11,38 @@ const { DecisionEngine } = require('./services/decision-engine');
 
 const logger = createLogger(module);
 
+const validateConfig = () => {
+    const requiredConfig = [
+        'bet365.account',
+        'octoBrowser.profileId',
+        'telegram.botId',
+        'telegram.chatId',
+    ];
+
+    const missingConfig = requiredConfig.filter((key) => !config.has(key));
+
+    if (missingConfig.length) {
+        throw new Error(`Missing required config keys: ${missingConfig.join(', ')}`);
+    }
+};
+
 (async () => {
     try {
-        logger.info(`Starting application. Partial config: ${JSON.stringify(_.omit(config))}`);
+        validateConfig();
+
+        logger.info(`Starting application. Partial config: ${JSON.stringify(_.omit(config, []))}`);
 
         const storageDirectory = path.resolve(__dirname, '', 'db');
-
         fs.mkdirSync(storageDirectory, { recursive: true });
 
-        const storage = new SimpleFileBasedStorage(path.resolve(storageDirectory, 'data.json'));
+        const storage = new SimpleFileBasedStorage(path.resolve(storageDirectory, `${config.get('bet365.account')}.json`));
         const telegramNotifier = new TelegramNotifier();
         const decisionEngine = new DecisionEngine(storage, telegramNotifier);
         const octoBrowserApi = new OctoBrowserApi();
+
+        const currentOpenBets = storage.get('openBets') || [];
+
+        logger.info(`Current open bets: ${JSON.stringify(currentOpenBets)}`);
 
         const isOctoRunning = await octoBrowserApi.checkOctoIsRunning();
 

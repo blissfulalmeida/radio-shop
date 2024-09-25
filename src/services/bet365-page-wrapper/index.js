@@ -8,14 +8,9 @@ const { createLogger } = require('../../components/logger');
 const { Bet365MyBetsPageHelper } = require('./bet365-my-bets-helper');
 const { beautifyHTML } = require('../../components/util');
 const { OpenBetDataExtractor } = require('./open-bet-data-extractor');
+const { BET_365_STATE } = require('../../constants');
 
 const logger = createLogger(module);
-
-const BET_365_STATE = {
-    IDLE: 'IDLE',
-    READY: 'READY',
-    LOGGED_OUT: 'LOGGED_OUT',
-};
 
 class Bet365PageWrapper {
     /**

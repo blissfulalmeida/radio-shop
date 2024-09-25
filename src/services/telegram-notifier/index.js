@@ -8,7 +8,7 @@ class TelegramNotifier {
     constructor() {
         this.telegramBotId = config.get('telegram.botId');
         this.telegramChatId = config.get('telegram.chatId');
-        this.telegramAccount = config.get('telegram.account');
+        this.telegramAccount = config.get('bet365.account');
     }
 
     /**
@@ -31,6 +31,13 @@ class TelegramNotifier {
 
     async sendLoggedOutMessage() {
         await this._sendTelegramMessage(`Account ${this.telegramAccount}\nLogged out`);
+    }
+
+    /**
+     * @param {BetData} bet
+     */
+    async sendNewBetMessage(bet) {
+        await this._sendTelegramMessage(`Account ${this.telegramAccount}\nNew bet: ${JSON.stringify(bet)}`);
     }
 }
 
