@@ -12,6 +12,8 @@ const { BET_365_STATE } = require('../../constants');
 
 const logger = createLogger(module);
 
+const NEED_TO_SAVE_HTML = config.get('bet365.saveHtml');
+
 class Bet365PageWrapper {
     /**
      * @param {Profile} profile
@@ -212,7 +214,7 @@ class Bet365PageWrapper {
         try {
             this.cycleNumber += 1;
 
-            logger.info(`${this.cycleNumber}: Starting new cycle`);
+            logger.info(`${this.cycleNumber}: Starting new cycle${reloadPage ? ' (reloading page)' : ' (skipping page reload)'}`);
 
             const bet365MyBetsPageHelper = new Bet365MyBetsPageHelper(this.page, this.bet365MyBetsPage);
 
@@ -275,19 +277,25 @@ class Bet365PageWrapper {
 
             const betItems = $('div.myb-OpenBetItem, div.myb-SettledBetItem');
 
-            const folderName = `bets-${moment.utc().format('YYYY-MM-DD-HH-mm-ss')}`;
-            const folderPath = path.resolve(__dirname, '..', '..', '..', 'crawled', folderName);
+            if (NEED_TO_SAVE_HTML) {
+                const folderName = `bets-${moment.utc().format('YYYY-MM-DD-HH-mm-ss')}`;
+                const folderPath = path.resolve(__dirname, '..', '..', '..', 'crawled', folderName);
 
-            fs.mkdirSync(folderPath);
+                fs.mkdirSync(folderPath);
+
+                Array.from(betItems).forEach((betElement, index) => {
+                    const betHtml = $.html(betElement);
+                    const beautifiedHtml = beautifyHTML(betHtml);
+
+                    fs.writeFileSync(path.join(folderPath, `${index}.html`), beautifiedHtml);
+                });
+
+                logger.info(`${this.cycleNumber}: Saved all bets to ${folderName}`);
+            }
 
             const openBets = [];
 
-            Array.from(betItems).forEach((betElement, index) => {
-                const betHtml = $.html(betElement);
-                const beautifiedHtml = beautifyHTML(betHtml);
-
-                fs.writeFileSync(path.join(folderPath, `${index}.html`), beautifiedHtml);
-
+            Array.from(betItems).forEach((betElement) => {
                 const className = betElement.attribs.class || '';
 
                 if (className.includes('myb-OpenBetItem')) {
@@ -302,7 +310,7 @@ class Bet365PageWrapper {
 
             this.decisionEngine.handleFetchedOpenBets(openBets);
 
-            logger.info(`${this.cycleNumber}: Saved all bets to ${folderName}`);
+            logger.info(`${this.cycleNumber}: Fetched cycle`);
         } catch (error) {
             throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed to execute page action: ${error.message}`);
         }

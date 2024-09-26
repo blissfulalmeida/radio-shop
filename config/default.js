@@ -5,5 +5,6 @@ module.exports = {
     },
     bet365: {
         myBetsPage: 'https://www.bet365.es/#/MB/',
+        saveHtml: false,
     },
 };

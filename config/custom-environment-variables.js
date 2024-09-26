@@ -7,6 +7,10 @@ module.exports = {
     bet365: {
         account: 'CB_BET365_ACCOUNT',
         myBetsPage: 'CB_BET365_MY_BETS_PAGE',
+        saveHtml: {
+            __name: 'CB_BET365_SAVE_HTML',
+            __format: 'boolean',
+        },
     },
     telegram: {
         botId: 'CB_TELEGRAM_BOT_ID',
