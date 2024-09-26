@@ -32,13 +32,13 @@ class OpenBetDataExtractor {
                 betDict.market = markets.eq(0).text().trim();
             }
 
-            const team1Name = $(this.betElement).find('div[class$="_Team1Name"]');
+            const team1Name = $(this.betElement).find('div[class*="_Team1Name"]');
 
             if (team1Name.length) {
                 betDict.team1Name = team1Name.text().trim();
             }
 
-            const team2Name = $(this.betElement).find('div[class$="_Team2Name"]');
+            const team2Name = $(this.betElement).find('div[class*="_Team2Name"]');
 
             if (team2Name.length) {
                 betDict.team2Name = team2Name.text().trim();
