@@ -75,7 +75,7 @@ class Bet365MyBetsPageHelper {
      */
     async clickOnAllBets() {
         try {
-            const element = await this.page.waitForSelector('.myb-MyBetsHeader_Scroller > div[data-content="All"]', { visible: true, timeout: 10000 });
+            const element = await this.page.waitForSelector('.myb-MyBetsHeader_Scroller > div[data-content="Unsettled"]', { visible: true, timeout: 10000 });
 
             const box = await element.boundingBox();
 
