@@ -63,6 +63,8 @@ const validateConfig = () => {
         await bet365PageWrapper.init();
 
         telegramNotifier.sendAppLaunchedMessage();
+
+        storageCleaner.init();
     } catch (error) {
         logger.error(`INITIALIZATION_ERROR:: Failed to start application: ${error.message}`);
 

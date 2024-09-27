@@ -16,9 +16,13 @@ class StorageCleaner {
     }
 
     init() {
+        const cycleInterval = config.get('storage.openBets.cleaningInterval');
+
         this.cleaningInterval = setInterval(() => {
             this.clean();
-        }, config.get('storage.openBets.cleaningInterval'));
+        }, cycleInterval);
+
+        logger.info('Starting storage cleaner. Cycle interval:', cycleInterval);
     }
 
     clean() {
