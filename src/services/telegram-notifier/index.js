@@ -26,10 +26,14 @@ class TelegramNotifier {
     }
 
     async sendAppLaunchedMessage() {
+        logger.info('TELEGRAM: Sending app launched message');
+
         await this._sendTelegramMessage(`#${this.bet365Account}\nApp launched`);
     }
 
     async sendLoggedOutMessage() {
+        logger.info('TELEGRAM: Sending logged out message');
+
         await this._sendTelegramMessage(`#${this.bet365Account}\nLogged out`);
     }
 
@@ -38,6 +42,8 @@ class TelegramNotifier {
      */
     async sendNewBetMessage(bet) {
         const formattedbetMessage = `Team 1: ${bet.team1Name || '-'}\nTeam 2: ${bet.team2Name || '-'}\nMarket: ${bet.market || '-'}\nSide: ${bet.side || '-'}\nStake: ${bet.stake || '-'}\nOdd: ${bet.odd || '-'}`;
+
+        logger.info(`TELEGRAM: Sending new bet message: ${formattedbetMessage}`);
 
         await this._sendTelegramMessage(`#${this.bet365Account}\nNew bet:\n${formattedbetMessage}`);
     }

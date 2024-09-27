@@ -38,7 +38,7 @@ module.exports.createLogger = (callingModule) => {
         exitOnError: false,
     });
 
-    const label = getModuleName(callingModule);
+    // const label = getModuleName(callingModule);
     const level = config.get('logLevel');
 
     logger.add(
@@ -47,7 +47,7 @@ module.exports.createLogger = (callingModule) => {
             format: winston.format.combine(
                 winston.format.timestamp(),
                 winston.format.colorize(),
-                winston.format.label({ label }),
+                // winston.format.label({ label }),
                 winston.format((info) => {
                     // eslint-disable-next-line no-param-reassign
                     info.ctx = formatContext();
