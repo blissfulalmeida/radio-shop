@@ -76,7 +76,7 @@ describe('DecisionEngine', () => {
     });
 
     it('updates the last seen time of a single bet', () => {
-        expect.assertions(1);
+        expect.assertions(2);
 
         const currentStorageItems = [
             {
@@ -122,5 +122,78 @@ describe('DecisionEngine', () => {
         const savedBet = updatedBets[0];
 
         expect(savedBet.metadata.lastSeenAt).toStrictEqual(mockUTCTimestamp);
+        expect(telegramNotifier.sendNewBetMessage).toHaveBeenCalledTimes(0);
+    });
+
+    it('adds two new bets and updates the last seen time of one bet', () => {
+        expect.assertions(6);
+
+        const currentStorageItems = [
+            {
+                key: 'bet_key_one',
+                stake: '0.10',
+                side: 'Villarreal',
+                market: 'Full Time Result',
+                team1Name: 'Villarreal',
+                team2Name: 'Las Palmas',
+                odd: '1.50',
+                metadata: {
+                    firstSeenAt: '2023-01-01T00:00:00Z',
+                    lastSeenAt: '2023-01-01T00:00:00Z',
+                },
+            },
+        ];
+
+        storageMock.get.mockReturnValueOnce(currentStorageItems);
+
+        const mockUTCTimestamp = '2024-01-01T00:00:00Z';
+        jest.spyOn(moment, 'utc').mockReturnValue({
+            toISOString: jest.fn()
+                .mockReturnValueOnce(mockUTCTimestamp)
+                .mockReturnValueOnce(mockUTCTimestamp)
+                .mockReturnValueOnce(mockUTCTimestamp),
+        });
+
+        const decisionEngine = new DecisionEngine(storageMock, telegramNotifier);
+
+        const newBets = [
+            {
+                key: 'bet_key_one',
+                stake: '0.10',
+                side: 'Villarreal',
+                market: 'Full Time Result',
+                team1Name: 'Villarreal',
+                team2Name: 'Las Palmas',
+                odd: '1.50',
+            },
+            {
+                key: 'bet_key_two',
+                stake: '0.10',
+                side: 'Villarreal',
+                market: 'Full Time Result',
+                team1Name: 'Villarreal',
+                team2Name: 'Las Palmas',
+                odd: '1.50',
+            },
+        ];
+
+        decisionEngine.handleFetchedOpenBets(newBets);
+
+        const updatedBets = storageMock.set.mock.calls[0][1];
+
+        expect(updatedBets).toHaveLength(2);
+
+        const bet1 = updatedBets[0];
+        const bet2 = updatedBets[1];
+
+        expect(bet1.key).toBe('bet_key_one');
+        expect(bet2.key).toBe('bet_key_two');
+
+        expect(bet1.metadata.lastSeenAt).toStrictEqual(mockUTCTimestamp);
+        expect(bet2.metadata).toStrictEqual({
+            firstSeenAt: mockUTCTimestamp,
+            lastSeenAt: mockUTCTimestamp,
+        });
+        expect(telegramNotifier.sendNewBetMessage).toHaveBeenCalledTimes(1);
     });
 });

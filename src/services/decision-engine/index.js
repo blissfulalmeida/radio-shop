@@ -58,7 +58,7 @@ class DecisionEngine {
             } else {
                 const existingBet = betsMap.get(bet.key);
 
-                existingBet.metadata = bet.metadata || {};
+                existingBet.metadata = existingBet.metadata || {};
                 existingBet.metadata.lastSeenAt = moment.utc().toISOString();
 
                 if (!existingBet.metadata.firstSeenAt) {
