@@ -1,0 +1,527 @@
+[
+    {
+        "date": "bets-2024-09-25-11-56-18",
+        "added": [
+            {
+                "stake": "€0.20",
+                "side": "Girona",
+                "market": "Full Time Result",
+                "odd": "1.70",
+                "key": "-:::-:::Full Time Result:::Girona:::€0.20:::1.70"
+            },
+            {
+                "stake": "€0.25",
+                "side": "Over 2.5",
+                "market": "Total Goals",
+                "odd": "1.40",
+                "key": "-:::-:::Total Goals:::Over 2.5:::€0.25:::1.40"
+            },
+            {
+                "stake": "€0.20",
+                "side": "Over 2.5",
+                "market": "Total Goals",
+                "odd": "1.44",
+                "key": "-:::-:::Total Goals:::Over 2.5:::€0.20:::1.44"
+            },
+            {
+                "stake": "€0.50",
+                "side": "Under 2.5",
+                "market": "Total Goals",
+                "odd": "2.10",
+                "key": "-:::-:::Total Goals:::Under 2.5:::€0.50:::2.10"
+            },
+            {
+                "stake": "€0.20",
+                "side": "Under 2.5",
+                "market": "Total Goals",
+                "odd": "1.80",
+                "key": "-:::-:::Total Goals:::Under 2.5:::€0.20:::1.80"
+            },
+            {
+                "stake": "€0.30",
+                "side": "Over 2.5",
+                "market": "Total Goals",
+                "odd": "1.57",
+                "key": "-:::-:::Total Goals:::Over 2.5:::€0.30:::1.57"
+            },
+            {
+                "stake": "€0.10",
+                "side": "Galatasaray",
+                "market": "Full Time Result",
+                "odd": "1.61",
+                "key": "-:::-:::Full Time Result:::Galatasaray:::€0.10:::1.61"
+            },
+            {
+                "stake": "€0.30",
+                "side": "FC Porto",
+                "market": "Full Time Result",
+                "odd": "1.85",
+                "key": "-:::-:::Full Time Result:::FC Porto:::€0.30:::1.85"
+            },
+            {
+                "stake": "€0.30",
+                "side": "Anderlecht",
+                "market": "Full Time Result",
+                "odd": "2.20",
+                "key": "-:::-:::Full Time Result:::Anderlecht:::€0.30:::2.20"
+            },
+            {
+                "stake": "€0.20",
+                "side": "AZ",
+                "market": "Full Time Result",
+                "odd": "1.42",
+                "key": "-:::-:::Full Time Result:::AZ:::€0.20:::1.42"
+            }
+        ],
+        "removed": []
+    },
+    {
+        "date": "bets-2024-09-25-11-58-55",
+        "added": [
+            {
+                "stake": "€0.20",
+                "side": "Barcelona",
+                "market": "Full Time Result",
+                "odd": "1.45",
+                "key": "-:::-:::Full Time Result:::Barcelona:::€0.20:::1.45"
+            }
+        ],
+        "removed": []
+    },
+    {
+        "date": "bets-2024-09-25-12-05-13",
+        "added": [
+            {
+                "stake": "€0.10",
+                "side": "Villarreal",
+                "market": "Full Time Result",
+                "odd": "1.50",
+                "key": "-:::-:::Full Time Result:::Villarreal:::€0.10:::1.50"
+            }
+        ],
+        "removed": []
+    },
+    {
+        "date": "bets-2024-09-25-12-54-48",
+        "added": [
+            {
+                "stake": "€0.10",
+                "side": "Magnolia Hotshots +3.5",
+                "market": "Spread",
+                "odd": "1.83",
+                "key": "-:::-:::Spread:::Magnolia Hotshots +3.5:::€0.10:::1.83"
+            }
+        ],
+        "removed": []
+    },
+    {
+        "date": "bets-2024-09-25-12-55-37",
+        "added": [
+            {
+                "stake": "€0.10",
+                "side": "Over 211.5",
+                "market": "Total 2-Way",
+                "odd": "1.86",
+                "key": "-:::-:::Total 2-Way:::Over 211.5:::€0.10:::1.86"
+            }
+        ],
+        "removed": []
+    },
+    {
+        "date": "bets-2024-09-25-12-56-15",
+        "added": [
+            {
+                "stake": "€0.10",
+                "side": "Over 4.5",
+                "market": "Match Goals",
+                "odd": "2.20",
+                "key": "-:::-:::Match Goals:::Over 4.5:::€0.10:::2.20"
+            }
+        ],
+        "removed": []
+    },
+    {
+        "date": "bets-2024-09-25-12-56-52",
+        "added": [
+            {
+                "stake": "€0.10",
+                "side": "(0-2) Moik Baku -1.5",
+                "market": "Asian Handicap In-Play",
+                "odd": "1.850",
+                "key": "-:::-:::Asian Handicap In-Play:::(0-2) Moik Baku -1.5:::€0.10:::1.850"
+            }
+        ],
+        "removed": []
+    },
+    {
+        "date": "bets-2024-09-25-12-57-29",
+        "added": [
+            {
+                "stake": "€0.10",
+                "side": "Moik Baku +1.0",
+                "market": "3-Way Handicap",
+                "odd": "1.80",
+                "key": "-:::-:::3-Way Handicap:::Moik Baku +1.0:::€0.10:::1.80"
+            }
+        ],
+        "removed": []
+    },
+    {
+        "date": "bets-2024-09-25-12-57-54",
+        "added": [
+            {
+                "stake": "€0.10",
+                "side": "Moik Baku",
+                "market": "Fulltime Result",
+                "odd": "3.25",
+                "key": "-:::-:::Fulltime Result:::Moik Baku:::€0.10:::3.25"
+            }
+        ],
+        "removed": []
+    },
+    {
+        "date": "bets-2024-09-25-13-00-21",
+        "added": [
+            {
+                "stake": "€0.16",
+                "side": "Piast Gliwice",
+                "market": "Fulltime Result",
+                "odd": "1.062",
+                "key": "-:::-:::Fulltime Result:::Piast Gliwice:::€0.16:::1.062"
+            }
+        ],
+        "removed": []
+    },
+    {
+        "date": "bets-2024-09-25-13-05-55",
+        "added": [],
+        "removed": [
+            {
+                "stake": "€0.10",
+                "side": "Moik Baku",
+                "market": "Fulltime Result",
+                "odd": "3.25",
+                "key": "-:::-:::Fulltime Result:::Moik Baku:::€0.10:::3.25"
+            },
+            {
+                "stake": "€0.10",
+                "side": "Moik Baku +1.0",
+                "market": "3-Way Handicap",
+                "odd": "1.80",
+                "key": "-:::-:::3-Way Handicap:::Moik Baku +1.0:::€0.10:::1.80"
+            },
+            {
+                "stake": "€0.10",
+                "side": "(0-2) Moik Baku -1.5",
+                "market": "Asian Handicap In-Play",
+                "odd": "1.850",
+                "key": "-:::-:::Asian Handicap In-Play:::(0-2) Moik Baku -1.5:::€0.10:::1.850"
+            },
+            {
+                "stake": "€0.10",
+                "side": "Over 4.5",
+                "market": "Match Goals",
+                "odd": "2.20",
+                "key": "-:::-:::Match Goals:::Over 4.5:::€0.10:::2.20"
+            },
+            {
+                "stake": "€0.10",
+                "side": "Magnolia Hotshots +3.5",
+                "market": "Spread",
+                "odd": "1.83",
+                "key": "-:::-:::Spread:::Magnolia Hotshots +3.5:::€0.10:::1.83"
+            }
+        ]
+    },
+    {
+        "date": "bets-2024-09-25-13-53-45",
+        "added": [
+            {
+                "stake": "€0.10",
+                "side": "Moik Baku",
+                "market": "Fulltime Result",
+                "odd": "3.25",
+                "key": "-:::-:::Fulltime Result:::Moik Baku:::€0.10:::3.25"
+            },
+            {
+                "stake": "€0.10",
+                "side": "Moik Baku +1.0",
+                "market": "3-Way Handicap",
+                "odd": "1.80",
+                "key": "-:::-:::3-Way Handicap:::Moik Baku +1.0:::€0.10:::1.80"
+            },
+            {
+                "stake": "€0.10",
+                "side": "(0-2) Moik Baku -1.5",
+                "market": "Asian Handicap In-Play",
+                "odd": "1.850",
+                "key": "-:::-:::Asian Handicap In-Play:::(0-2) Moik Baku -1.5:::€0.10:::1.850"
+            },
+            {
+                "stake": "€0.10",
+                "side": "Over 4.5",
+                "market": "Match Goals",
+                "odd": "2.20",
+                "key": "-:::-:::Match Goals:::Over 4.5:::€0.10:::2.20"
+            },
+            {
+                "stake": "€0.10",
+                "side": "Magnolia Hotshots +3.5",
+                "market": "Spread",
+                "odd": "1.83",
+                "key": "-:::-:::Spread:::Magnolia Hotshots +3.5:::€0.10:::1.83"
+            }
+        ],
+        "removed": []
+    },
+    {
+        "date": "bets-2024-09-25-14-04-39",
+        "added": [],
+        "removed": [
+            {
+                "stake": "€0.10",
+                "side": "Moik Baku",
+                "market": "Fulltime Result",
+                "odd": "3.25",
+                "key": "-:::-:::Fulltime Result:::Moik Baku:::€0.10:::3.25"
+            },
+            {
+                "stake": "€0.10",
+                "side": "Moik Baku +1.0",
+                "market": "3-Way Handicap",
+                "odd": "1.80",
+                "key": "-:::-:::3-Way Handicap:::Moik Baku +1.0:::€0.10:::1.80"
+            },
+            {
+                "stake": "€0.10",
+                "side": "(0-2) Moik Baku -1.5",
+                "market": "Asian Handicap In-Play",
+                "odd": "1.850",
+                "key": "-:::-:::Asian Handicap In-Play:::(0-2) Moik Baku -1.5:::€0.10:::1.850"
+            },
+            {
+                "stake": "€0.10",
+                "side": "Over 4.5",
+                "market": "Match Goals",
+                "odd": "2.20",
+                "key": "-:::-:::Match Goals:::Over 4.5:::€0.10:::2.20"
+            },
+            {
+                "stake": "€0.10",
+                "side": "Over 211.5",
+                "market": "Total 2-Way",
+                "odd": "1.86",
+                "key": "-:::-:::Total 2-Way:::Over 211.5:::€0.10:::1.86"
+            },
+            {
+                "stake": "€0.10",
+                "side": "Magnolia Hotshots +3.5",
+                "market": "Spread",
+                "odd": "1.83",
+                "key": "-:::-:::Spread:::Magnolia Hotshots +3.5:::€0.10:::1.83"
+            }
+        ]
+    },
+    {
+        "date": "bets-2024-09-25-14-17-37",
+        "added": [],
+        "removed": [
+            {
+                "stake": "€0.16",
+                "side": "Piast Gliwice",
+                "market": "Fulltime Result",
+                "odd": "1.062",
+                "key": "-:::-:::Fulltime Result:::Piast Gliwice:::€0.16:::1.062"
+            }
+        ]
+    },
+    {
+        "date": "bets-2024-09-25-14-23-50",
+        "added": [
+            {
+                "stake": "€0.16",
+                "side": "Piast Gliwice",
+                "market": "Fulltime Result",
+                "odd": "1.062",
+                "key": "-:::-:::Fulltime Result:::Piast Gliwice:::€0.16:::1.062"
+            }
+        ],
+        "removed": []
+    },
+    {
+        "date": "bets-2024-09-25-14-54-59",
+        "added": [],
+        "removed": [
+            {
+                "stake": "€0.16",
+                "side": "Piast Gliwice",
+                "market": "Fulltime Result",
+                "odd": "1.062",
+                "key": "-:::-:::Fulltime Result:::Piast Gliwice:::€0.16:::1.062"
+            }
+        ]
+    },
+    {
+        "date": "bets-2024-09-25-14-57-07",
+        "added": [
+            {
+                "stake": "€0.16",
+                "side": "Piast Gliwice",
+                "market": "Fulltime Result",
+                "odd": "1.062",
+                "key": "-:::-:::Fulltime Result:::Piast Gliwice:::€0.16:::1.062"
+            }
+        ],
+        "removed": []
+    },
+    {
+        "date": "bets-2024-09-25-15-16-22",
+        "added": [],
+        "removed": [
+            {
+                "stake": "€0.16",
+                "side": "Piast Gliwice",
+                "market": "Fulltime Result",
+                "odd": "1.062",
+                "key": "-:::-:::Fulltime Result:::Piast Gliwice:::€0.16:::1.062"
+            }
+        ]
+    },
+    {
+        "date": "bets-2024-09-25-17-29-18",
+        "added": [],
+        "removed": [
+            {
+                "stake": "€0.50",
+                "side": "Under 2.5",
+                "market": "Total Goals",
+                "odd": "2.10",
+                "key": "-:::-:::Total Goals:::Under 2.5:::€0.50:::2.10"
+            }
+        ]
+    },
+    {
+        "date": "bets-2024-09-25-17-55-03",
+        "added": [],
+        "removed": [
+            {
+                "stake": "€0.30",
+                "side": "Over 2.5",
+                "market": "Total Goals",
+                "odd": "1.57",
+                "key": "-:::-:::Total Goals:::Over 2.5:::€0.30:::1.57"
+            }
+        ]
+    },
+    {
+        "date": "bets-2024-09-25-18-39-56",
+        "added": [],
+        "removed": [
+            {
+                "stake": "€0.20",
+                "side": "AZ",
+                "market": "Full Time Result",
+                "odd": "1.42",
+                "key": "-:::-:::Full Time Result:::AZ:::€0.20:::1.42"
+            }
+        ]
+    },
+    {
+        "date": "bets-2024-09-25-18-43-23",
+        "added": [],
+        "removed": [
+            {
+                "stake": "€0.30",
+                "side": "FC Porto",
+                "market": "Full Time Result",
+                "odd": "1.85",
+                "key": "-:::-:::Full Time Result:::FC Porto:::€0.30:::1.85"
+            }
+        ]
+    },
+    {
+        "date": "bets-2024-09-25-18-57-28",
+        "added": [],
+        "removed": [
+            {
+                "stake": "€0.20",
+                "side": "Girona",
+                "market": "Full Time Result",
+                "odd": "1.70",
+                "key": "-:::-:::Full Time Result:::Girona:::€0.20:::1.70"
+            },
+            {
+                "stake": "€0.20",
+                "side": "Girona",
+                "market": "Full Time Result",
+                "odd": "1.70",
+                "key": "-:::-:::Full Time Result:::Girona:::€0.20:::1.70"
+            }
+        ]
+    },
+    {
+        "date": "bets-2024-09-25-20-25-07",
+        "added": [],
+        "removed": [
+            {
+                "stake": "€0.30",
+                "side": "Anderlecht",
+                "market": "Full Time Result",
+                "odd": "2.20",
+                "key": "-:::-:::Full Time Result:::Anderlecht:::€0.30:::2.20"
+            }
+        ]
+    },
+    {
+        "date": "bets-2024-09-25-20-44-00",
+        "added": [],
+        "removed": [
+            {
+                "stake": "€0.20",
+                "side": "Under 2.5",
+                "market": "Total Goals",
+                "odd": "1.80",
+                "key": "-:::-:::Total Goals:::Under 2.5:::€0.20:::1.80"
+            }
+        ]
+    },
+    {
+        "date": "bets-2024-09-25-20-52-29",
+        "added": [],
+        "removed": [
+            {
+                "stake": "€0.25",
+                "side": "Over 2.5",
+                "market": "Total Goals",
+                "odd": "1.40",
+                "key": "-:::-:::Total Goals:::Over 2.5:::€0.25:::1.40"
+            }
+        ]
+    },
+    {
+        "date": "bets-2024-09-25-20-53-30",
+        "added": [],
+        "removed": [
+            {
+                "stake": "€0.20",
+                "side": "Over 2.5",
+                "market": "Total Goals",
+                "odd": "1.44",
+                "key": "-:::-:::Total Goals:::Over 2.5:::€0.20:::1.44"
+            }
+        ]
+    },
+    {
+        "date": "bets-2024-09-25-20-57-07",
+        "added": [],
+        "removed": [
+            {
+                "stake": "€0.10",
+                "side": "Galatasaray",
+                "market": "Full Time Result",
+                "odd": "1.61",
+                "key": "-:::-:::Full Time Result:::Galatasaray:::€0.10:::1.61"
+            }
+        ]
+    }
+]
