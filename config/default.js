@@ -7,4 +7,10 @@ module.exports = {
         myBetsPage: 'https://www.bet365.es/#/MB/',
         saveHtml: false,
     },
+    storage: {
+        openBets: {
+            cleaningInterval: 1000 * 60 * 5,
+            deleteAfterSeconds: 60 * 60 * 24 * 7,
+        },
+    },
 };

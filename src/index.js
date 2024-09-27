@@ -8,6 +8,7 @@ const { Bet365PageWrapper } = require('./services/bet365-page-wrapper');
 const { TelegramNotifier } = require('./services/telegram-notifier');
 const { SimpleFileBasedStorage } = require('./services/storage');
 const { DecisionEngine } = require('./services/decision-engine');
+const { StorageCleaner } = require('./services/storage-cleaner');
 
 const logger = createLogger(module);
 
@@ -39,6 +40,7 @@ const validateConfig = () => {
         const telegramNotifier = new TelegramNotifier();
         const decisionEngine = new DecisionEngine(storage, telegramNotifier);
         const octoBrowserApi = new OctoBrowserApi();
+        const storageCleaner = new StorageCleaner(storage, config.get('storage.openBets.deleteAfterSeconds'));
 
         const currentOpenBets = storage.get('openBets') || [];
 
