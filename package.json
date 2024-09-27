@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "lint": "eslint .",
-    "test:unit": "NODE_ENV=unit jest --testPathPattern=__tests__/unit/.*.test.js --config ./__tests__/unit/config.json --runInBand",
+    "test:unit": "NODE_ENV=test-unit jest --testPathPattern=__tests__/unit/.*.test.js --config ./__tests__/unit/config.json --runInBand",
     "test": "npm run test:unit"
   },
   "keywords": [],

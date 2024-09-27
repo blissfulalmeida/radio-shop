@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const moment = require('moment');
 const { DecisionEngine } = require('../../../../../src/services/decision-engine');
 
 describe('DecisionEngine', () => {
@@ -30,12 +31,19 @@ describe('DecisionEngine', () => {
     });
 
     it('saves a single arrived bet', () => {
-        expect.assertions(2);
+        expect.assertions(4);
 
         /** @type { BetData[] } */
         const currentStorageItems = [];
 
         storageMock.get.mockReturnValueOnce(currentStorageItems);
+        const mockUTCTimestamp = '2023-01-01T00:00:00Z';
+
+        jest.spyOn(moment, 'utc').mockReturnValue({
+            toISOString: jest.fn()
+                .mockReturnValueOnce(mockUTCTimestamp)
+                .mockReturnValueOnce(mockUTCTimestamp),
+        });
 
         const decisionEngine = new DecisionEngine(storageMock, telegramNotifier);
 
@@ -56,6 +64,14 @@ describe('DecisionEngine', () => {
         const updatedBets = storageMock.set.mock.calls[0][1];
 
         expect(updatedBets).toHaveLength(1);
-        expect(_.omit(updatedBets[0], 'metadata')).toStrictEqual(newBets[0]);
+
+        const savedBet = updatedBets[0];
+
+        expect(_.omit(savedBet, 'metadata')).toStrictEqual(newBets[0]);
+        expect(savedBet.metadata).toStrictEqual({
+            firstSeenAt: mockUTCTimestamp,
+            lastSeenAt: mockUTCTimestamp,
+        });
+        expect(telegramNotifier.sendNewBetMessage).toHaveBeenCalledTimes(1);
     });
 });

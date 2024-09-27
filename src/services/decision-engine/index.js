@@ -36,7 +36,7 @@ class DecisionEngine {
      * @param {BetData[]} bets
      */
     handleFetchedOpenBets(bets) {
-        logger.info(`Fetched ${bets.length} open bets: ${JSON.stringify(bets)}`);
+        logger.info(`Received ${bets.length} open bets: ${JSON.stringify(bets)}`);
 
         /** @type {BetData[]} */
         const currentBets = _.cloneDeep(this.storage.get('openBets') || []);
@@ -44,9 +44,9 @@ class DecisionEngine {
 
         // eslint-disable-next-line no-restricted-syntax
         for (const bet of _.cloneDeep(bets)) {
-            const betWasAlreadySeen = betsMap.has(bet.key);
+            const betExistsInStorage = betsMap.has(bet.key);
 
-            if (!betWasAlreadySeen) {
+            if (!betExistsInStorage) {
                 bet.metadata = {
                     firstSeenAt: moment.utc().toISOString(),
                     lastSeenAt: moment.utc().toISOString(),
@@ -67,7 +67,7 @@ class DecisionEngine {
             }
         }
 
-        const updatedBets = Array.from(betsMap.values()).sort((a, b) => {
+        const updatedSortedBets = Array.from(betsMap.values()).sort((a, b) => {
             const aTime = moment(a.metadata.lastSeenAt);
             const bTime = moment(b.metadata.lastSeenAt);
 
@@ -82,7 +82,7 @@ class DecisionEngine {
             return 0;
         });
 
-        this.storage.set('openBets', updatedBets);
+        this.storage.set('openBets', updatedSortedBets);
     }
 }
 
