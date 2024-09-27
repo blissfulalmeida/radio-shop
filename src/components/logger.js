@@ -19,20 +19,6 @@ const formatContext = () => {
     }
 };
 
-const getModuleName = (callingModule) => {
-    if (!callingModule) {
-        return '';
-    }
-
-    if (!callingModule.filename) {
-        return callingModule.id;
-    }
-
-    const parts = callingModule.filename.split('/');
-
-    return `${parts[parts.length - 2]}/${parts.pop()}`;
-};
-
 module.exports.createLogger = () => {
     const logger = winston.createLogger({
         exitOnError: false,
