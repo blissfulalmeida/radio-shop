@@ -43,7 +43,7 @@ class DecisionEngine {
         const betsMap = currentBets.reduce((acc, bet) => acc.set(bet.key, bet), new Map());
 
         // eslint-disable-next-line no-restricted-syntax
-        for (const bet of bets) {
+        for (const bet of _.cloneDeep(bets)) {
             const betWasAlreadySeen = betsMap.has(bet.key);
 
             if (!betWasAlreadySeen) {
@@ -53,6 +53,8 @@ class DecisionEngine {
                 };
 
                 betsMap.set(bet.key, bet);
+
+                this.telegramNotifier.sendNewBetMessage(bet);
             } else {
                 const existingBet = betsMap.get(bet.key);
 

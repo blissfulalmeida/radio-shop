@@ -41,5 +41,12 @@
  * @property {string} team1Name
  * @property {string} team2Name
  * @property {string} odd
+ * @property {Metadata} metadata
+ */
+
+/**
+ * @typedef {Object} Metadata
+ * @property {string} firstSeenAt
+ * @property {string} lastSeenAt
  */
 // #endregion
