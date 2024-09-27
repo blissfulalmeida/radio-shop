@@ -13,4 +13,7 @@ module.exports = {
             deleteAfterSeconds: 60 * 60 * 24 * 7,
         },
     },
+    call: {
+        shouldBeInitiated: true,
+    },
 };

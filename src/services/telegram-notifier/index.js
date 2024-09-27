@@ -10,6 +10,7 @@ class TelegramNotifier {
         this.telegramChatId = config.get('telegram.chatId');
         this.bet365Account = config.get('bet365.account');
         this.callWebHookUrl = config.get('call.webHookUrl');
+        this.callShouldBeInitiated = config.get('call.shouldBeInitiated');
     }
 
     /**
@@ -23,7 +24,7 @@ class TelegramNotifier {
             .then(() => { logger.info('TELEGRAM_NOTIFIER: Message sent'); })
             .catch((error) => { logger.error(`NOTIFIER_ERROR:: Failed to send message: ${error.message}`); });
 
-        if (makeCall) {
+        if (this.callShouldBeInitiated && makeCall) {
             await axios({
                 method: 'post',
                 url: this.callWebHookUrl,
