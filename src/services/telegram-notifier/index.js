@@ -8,6 +8,7 @@ class TelegramNotifier {
     constructor() {
         this.telegramBotId = config.get('telegram.botId');
         this.telegramChatId = config.get('telegram.chatId');
+        this.telegramErrorChatId = config.get('telegram.errorChatId');
         this.bet365Account = config.get('bet365.account');
         this.callWebHookUrl = config.get('call.webHookUrl');
         this.callShouldBeInitiated = config.get('call.shouldBeInitiated');
@@ -16,7 +17,7 @@ class TelegramNotifier {
     /**
      * @param {string} message
      */
-    async _sendTelegramMessage(message, makeCall = false) {
+    async _sendMainChannelTelegramMessage(message, makeCall = false) {
         axios({
             method: 'get',
             url: `https://api.telegram.org/bot${this.telegramBotId}/sendMessage?chat_id=${this.telegramChatId}&text=${encodeURIComponent(message)}`,
@@ -25,7 +26,7 @@ class TelegramNotifier {
             .catch((error) => { logger.error(`NOTIFIER_ERROR:: Failed to send message: ${error.message}`); });
 
         if (this.callShouldBeInitiated && makeCall) {
-            await axios({
+            axios({
                 method: 'post',
                 url: this.callWebHookUrl,
             })
@@ -34,16 +35,28 @@ class TelegramNotifier {
         }
     }
 
+    /**
+     * @param {string} message
+     */
+    async _sendErrorChannelTelegramMessage(message) {
+        axios({
+            method: 'get',
+            url: `https://api.telegram.org/bot${this.telegramBotId}/sendMessage?chat_id=${this.telegramErrorChatId}&text=${encodeURIComponent(message)}`,
+        })
+            .then(() => { logger.info('TELEGRAM_NOTIFIER: Error message sent'); })
+            .catch((error) => { logger.error(`TELEGRAM_NOTIFIER:: Failed to send error message: ${error.message}`); });
+    }
+
     async sendAppLaunchedMessage() {
         logger.info('TELEGRAM_NOTIFIER: Sending app launched message');
 
-        this._sendTelegramMessage(`#${this.bet365Account}\nApp launched`);
+        this._sendMainChannelTelegramMessage(`#${this.bet365Account}\nApp launched`);
     }
 
     async sendLoggedOutMessage() {
         logger.info('TELEGRAM_NOTIFIER: Sending logged out message');
 
-        this._sendTelegramMessage(`#${this.bet365Account}\nLogged out`, true);
+        this._sendMainChannelTelegramMessage(`#${this.bet365Account}\nLogged out`, true);
     }
 
     /**
@@ -54,7 +67,25 @@ class TelegramNotifier {
 
         logger.info(`TELEGRAM_NOTIFIER: Sending new bet message: ${formattedbetMessage}`);
 
-        await this._sendTelegramMessage(`#${this.bet365Account}\nNew bet:\n${formattedbetMessage}`, true);
+        await this._sendMainChannelTelegramMessage(`#${this.bet365Account}\nNew bet:\n${formattedbetMessage}`, true);
+    }
+
+    /**
+     * @param {string} message
+     */
+    async sendErrorNotification(message) {
+        logger.info(`TELEGRAM_NOTIFIER: Sending error notification: ${message}`);
+
+        this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\nError: ${message}`);
+    }
+
+    /**
+     * @param {string} message
+     */
+    async sendCustomErrorNotification(message) {
+        logger.info(`TELEGRAM_NOTIFIER: Sending custom error notification: ${message}`);
+
+        this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\nCustom error: ${message}`);
     }
 }
 

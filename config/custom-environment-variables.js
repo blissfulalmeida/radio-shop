@@ -15,5 +15,13 @@ module.exports = {
     telegram: {
         botId: 'CB_TELEGRAM_BOT_ID',
         chatId: 'CB_TELEGRAM_CHAT_ID',
+        errorChatId: 'CB_TELEGRAM_ERROR_CHAT_ID',
+    },
+    call: {
+        shouldBeInitiated: {
+            __name: 'CB_CALL_SHOULD_BE_INITIATED',
+            __format: 'boolean',
+        },
+        webHookUrl: 'CB_CALL_WEB_HOOK_URL',
     },
 };

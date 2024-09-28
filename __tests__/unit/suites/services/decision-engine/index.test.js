@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const moment = require('moment');
 const { DecisionEngine } = require('../../../../../src/services/decision-engine');
+const { CustomBet365HeplerError } = require('../../../../../src/services/bet365-page-wrapper/errors');
 
 describe('DecisionEngine', () => {
     const storageMock = {
@@ -10,6 +11,8 @@ describe('DecisionEngine', () => {
     const telegramNotifier = {
         sendLoggedOutMessage: jest.fn(),
         sendNewBetMessage: jest.fn(),
+        sendErrorNotification: jest.fn(),
+        sendCustomErrorNotification: jest.fn(),
     };
 
     it('calls storage correctly', () => {
@@ -195,5 +198,38 @@ describe('DecisionEngine', () => {
             lastSeenAt: mockUTCTimestamp,
         });
         expect(telegramNotifier.sendNewBetMessage).toHaveBeenCalledTimes(1);
+    });
+
+    it('sends not custom error immediately', () => {
+        expect.assertions(2);
+
+        const decisionEngine = new DecisionEngine(storageMock, telegramNotifier);
+
+        decisionEngine.handleError(new Error('Test error'));
+
+        expect(telegramNotifier.sendErrorNotification).toHaveBeenCalledTimes(1);
+        expect(telegramNotifier.sendErrorNotification).toHaveBeenCalledWith('Test error');
+    });
+
+    it('sends custom error after 2 minutes', () => {
+        expect.assertions(3);
+
+        jest.useFakeTimers();
+
+        const decisionEngine = new DecisionEngine(storageMock, telegramNotifier);
+
+        const customError = new CustomBet365HeplerError('Test error', 'TEST_CODE');
+
+        decisionEngine.handleError(customError);
+
+        expect(telegramNotifier.sendCustomErrorNotification).toHaveBeenCalledTimes(0);
+
+        jest.advanceTimersByTime(1000 * 60);
+
+        expect(telegramNotifier.sendCustomErrorNotification).toHaveBeenCalledTimes(0);
+
+        jest.advanceTimersByTime(1000 * 60 + 1);
+
+        expect(telegramNotifier.sendCustomErrorNotification).toHaveBeenCalledTimes(1);
     });
 });

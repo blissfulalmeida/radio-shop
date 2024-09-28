@@ -61,6 +61,7 @@ class Bet365PageWrapper {
             await this.page.goto(this.bet365MyBetsPage, { timeout: 30000, waitUntil: 'domcontentloaded' });
 
             this._changeState(BET_365_STATE.READY);
+
             this._startRealityCheckSolvingLoop();
             this._startDataCrawlingLoop();
             this._startLeanDataCrawlingLoop();
@@ -92,10 +93,7 @@ class Bet365PageWrapper {
 
     async _dataCrawlingTick() {
         try {
-            await this._executeAsyncJob(() => this._executePageAction()
-                .catch((error) => {
-                    logger.error(`BET365_PAGE_WRAPPER_ERROR:: Failed to poll ${this.cycleNumber}: ${error.message}`);
-                }));
+            await this._executeAsyncJob(() => this._executePageAction());
         } finally {
             setTimeout(() => {
                 this._dataCrawlingTick();
@@ -109,10 +107,7 @@ class Bet365PageWrapper {
 
     async _leanDataCrawlingTick() {
         try {
-            await this._executeAsyncJob(() => this._executePageAction(false)
-                .catch((error) => {
-                    logger.error(`BET365_PAGE_WRAPPER_ERROR:: Failed to poll ${this.cycleNumber}: ${error.message}`);
-                }));
+            await this._executeAsyncJob(() => this._executePageAction(false));
         } finally {
             setTimeout(() => {
                 this._leanDataCrawlingTick();
@@ -312,7 +307,7 @@ class Bet365PageWrapper {
 
             logger.info(`${this.cycleNumber}: Fetched cycle`);
         } catch (error) {
-            throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed to execute page action: ${error.message}`);
+            this.decisionEngine.handleError(error);
         }
     }
 }

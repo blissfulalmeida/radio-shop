@@ -37,7 +37,7 @@ module.exports.createLogger = () => {
 
                     return info;
                 })(),
-                winston.format.printf((info) => `${info.timestamp} ${info.level.padStart(16)} ${info.ctx} ${info.label}:  ${info.message}`),
+                winston.format.printf((info) => `${info.timestamp} ${info.level.padStart(16)} ${info.ctx}:  ${info.message}`),
             ),
         }),
     );
