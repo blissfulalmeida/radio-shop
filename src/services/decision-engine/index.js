@@ -40,6 +40,27 @@ class DecisionEngine {
          * @type {CustomBet365HeplerError|null}
          */
         this.customError = null;
+
+        /**
+         * @type {NodeJS.Timeout|null}
+         * This property is used to schedule inactivity notifications
+         */
+        this.inactivityTimeout = null;
+    }
+
+    init() {
+        this.reenableInactivityTimeout();
+    }
+
+    reenableInactivityTimeout() {
+        if (this.inactivityTimeout) {
+            clearTimeout(this.inactivityTimeout);
+            this.inactivityTimeout = null;
+        }
+
+        this.inactivityTimeout = setTimeout(() => {
+            this.telegramNotifier.sendInactivityNotification();
+        }, 1000 * 60 * 60 * 5);
     }
 
     /**
@@ -59,6 +80,7 @@ class DecisionEngine {
      */
     handleFetchedOpenBets(bets) {
         this.cancelScheduledCustomErrorNotification();
+        this.reenableInactivityTimeout();
 
         logger.info(`Received ${bets.length} open bets: ${JSON.stringify(bets)}`);
 
