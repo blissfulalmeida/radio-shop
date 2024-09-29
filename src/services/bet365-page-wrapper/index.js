@@ -235,11 +235,15 @@ class Bet365PageWrapper {
 
             this._setState(loggedIn ? BET_365_STATE.LOGGED_IN : BET_365_STATE.LOGGED_OUT);
 
+            if (!loggedIn) {
+                return;
+            }
+
             await bet365MyBetsPageHelper.waitForBetsHeaderToAppear();
 
             logger.info(`${this.cycleNumber}: Bets header appeared`);
 
-            await bet365MyBetsPageHelper.clickOnAllBets();
+            await bet365MyBetsPageHelper.clickOnUnsettledBets();
 
             logger.info(`${this.cycleNumber}: Clicked on all bets`);
 
