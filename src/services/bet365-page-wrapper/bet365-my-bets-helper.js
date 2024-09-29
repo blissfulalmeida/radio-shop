@@ -1,4 +1,4 @@
-const { delay } = require('../../components/util');
+const { delay, repeatedAsyncOperationExecutor } = require('../../components/util');
 const { createLogger } = require('../../components/logger');
 const { CustomBet365HeplerError, BET365_PAGE_WRAPPER_ERROR } = require('./errors');
 
@@ -36,8 +36,15 @@ class Bet365MyBetsPageHelper {
 
     async waitForPageHeaderToAppear() {
         try {
-            await this.page.waitForSelector('.hm-MainHeaderWide', { timeout: 30000 })
-                .catch(() => { throw new Error('Failed to waitForPageHeaderToAppear'); });
+            await repeatedAsyncOperationExecutor({
+                operation: () => this._page.$('div.wc-WebConsoleModule_Header > div.hm-HeaderModule'),
+                predicate: (el) => el,
+                timeout: 20,
+                attempts: 100,
+            })
+                .catch(() => {
+                    throw new Error('Failed to waitForPageHeaderToAppear');
+                });
         } catch (error) {
             throw new CustomBet365HeplerError(
                 `BET365_PAGE_WRAPPER_ERROR:: Failed to waitForPageHeaderToAppear: ${error.message}`,

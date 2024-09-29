@@ -18,6 +18,7 @@ const validateConfig = () => {
         'octoBrowser.profileId',
         'telegram.botId',
         'telegram.chatId',
+        'telegram.errorChatId',
     ];
 
     const missingConfig = requiredConfig.filter((key) => !config.has(key));
@@ -65,6 +66,7 @@ const validateConfig = () => {
         telegramNotifier.sendAppLaunchedMessage();
 
         storageCleaner.init();
+        decisionEngine.init();
     } catch (error) {
         logger.error(`INITIALIZATION_ERROR:: Failed to start application: ${error.message}`);
 

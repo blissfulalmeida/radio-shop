@@ -5,8 +5,12 @@ const moment = require('moment');
 const { createLogger } = require('../../components/logger');
 const { BET_365_STATE } = require('../../constants');
 const { CustomBet365HeplerError } = require('../bet365-page-wrapper/errors');
+const { minutes } = require('../../components/util');
 
 const logger = createLogger(module);
+
+const SEND_INACTIVITY_NOTIFICATION_AFTER_MINUTES = 2;
+const SEND_CUSTOM_ERROR_NOTIFICATION_AFTER_MINUTES = 2;
 
 class DecisionEngine {
     /**
@@ -60,7 +64,7 @@ class DecisionEngine {
 
         this.inactivityTimeout = setTimeout(() => {
             this.telegramNotifier.sendInactivityNotification();
-        }, 1000 * 60 * 60 * 5);
+        }, minutes(SEND_INACTIVITY_NOTIFICATION_AFTER_MINUTES));
     }
 
     /**
@@ -151,10 +155,12 @@ class DecisionEngine {
             return;
         }
 
+        logger.info(`Scheduling custom error notification. Will be sent in ${SEND_CUSTOM_ERROR_NOTIFICATION_AFTER_MINUTES} minutes if not cancelled`);
+
         this.customError = error;
         this.customErrorNotificationTimeout = setTimeout(() => {
             this.fireCustomErrorNotification();
-        }, 1000 * 60 * 2);
+        }, minutes(SEND_CUSTOM_ERROR_NOTIFICATION_AFTER_MINUTES));
     }
 
     cancelScheduledCustomErrorNotification() {

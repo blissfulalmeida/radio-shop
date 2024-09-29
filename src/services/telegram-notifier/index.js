@@ -23,7 +23,7 @@ class TelegramNotifier {
             url: `https://api.telegram.org/bot${this.telegramBotId}/sendMessage?chat_id=${this.telegramChatId}&text=${encodeURIComponent(message)}`,
         })
             .then(() => { logger.info('TELEGRAM_NOTIFIER: Message sent'); })
-            .catch((error) => { logger.error(`NOTIFIER_ERROR:: Failed to send message: ${error.message}`); });
+            .catch((error) => { logger.error(`NOTIFIER_ERROR:: Failed to send main channel message - ${message}. Error - ${error.message}`); });
 
         if (this.callShouldBeInitiated && makeCall) {
             axios({
@@ -44,7 +44,7 @@ class TelegramNotifier {
             url: `https://api.telegram.org/bot${this.telegramBotId}/sendMessage?chat_id=${this.telegramErrorChatId}&text=${encodeURIComponent(message)}`,
         })
             .then(() => { logger.info('TELEGRAM_NOTIFIER: Error message sent'); })
-            .catch((error) => { logger.error(`TELEGRAM_NOTIFIER:: Failed to send error message: ${error.message}`); });
+            .catch((error) => { logger.error(`TELEGRAM_NOTIFIER:: Failed to send error message - ${message}. Error - ${error.message}`); });
     }
 
     async sendAppLaunchedMessage() {
