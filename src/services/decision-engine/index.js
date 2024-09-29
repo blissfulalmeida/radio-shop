@@ -76,6 +76,8 @@ class DecisionEngine {
 
         if (newState === BET_365_STATE.LOGGED_OUT) {
             this.telegramNotifier.sendLoggedOutMessage();
+        } else if (newState === BET_365_STATE.LOGGED_IN) {
+            this.telegramNotifier.sendLoggedInMessage();
         }
     }
 

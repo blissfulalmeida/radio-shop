@@ -60,7 +60,7 @@ class Bet365PageWrapper {
 
             await this.page.goto(this.bet365MyBetsPage, { timeout: 30000, waitUntil: 'domcontentloaded' });
 
-            this._changeState(BET_365_STATE.READY);
+            this._setState(BET_365_STATE.READY);
 
             this._startRealityCheckSolvingLoop();
             this._startDataCrawlingLoop();
@@ -153,8 +153,12 @@ class Bet365PageWrapper {
             });
     }
 
-    _changeState(newState) {
+    _setState(newState) {
         const currentState = this.state;
+
+        if (currentState === newState) {
+            return;
+        }
 
         this.state = newState;
 
@@ -223,18 +227,13 @@ class Bet365PageWrapper {
 
             await bet365MyBetsPageHelper.waitForPageHeaderToAppear();
 
+            logger.info(`${this.cycleNumber}: Page header appeared`);
+
             const loggedIn = await bet365MyBetsPageHelper.checkLoggedIn();
 
             logger.info(`${this.cycleNumber}: Logged in: ${loggedIn ? 'YES' : 'NO'}`);
 
-            if (!loggedIn) {
-                // Do not send message if the state has not changed
-                if (this.state !== BET_365_STATE.LOGGED_OUT) {
-                    this._changeState(BET_365_STATE.LOGGED_OUT);
-                }
-
-                return;
-            }
+            this._setState(loggedIn ? BET_365_STATE.LOGGED_IN : BET_365_STATE.LOGGED_OUT);
 
             await bet365MyBetsPageHelper.waitForBetsHeaderToAppear();
 

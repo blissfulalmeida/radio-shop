@@ -59,6 +59,12 @@ class TelegramNotifier {
         this._sendMainChannelTelegramMessage(`#${this.bet365Account}\nLogged out`, true);
     }
 
+    async sendLoggedInMessage() {
+        logger.info('TELEGRAM_NOTIFIER: Sending logged in message');
+
+        this._sendMainChannelTelegramMessage(`#${this.bet365Account}\nLogged in`);
+    }
+
     /**
      * @param {BetData} bet
      */

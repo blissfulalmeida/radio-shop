@@ -37,10 +37,10 @@ class Bet365MyBetsPageHelper {
     async waitForPageHeaderToAppear() {
         try {
             await repeatedAsyncOperationExecutor({
-                operation: () => this._page.$('div.wc-WebConsoleModule_Header > div.hm-HeaderModule'),
+                operation: () => this.page.$('div.wc-WebConsoleModule_Header > div.hm-HeaderModule'),
                 predicate: (el) => el,
-                timeout: 20,
-                attempts: 100,
+                timeout: 50,
+                attempts: 50,
             })
                 .catch(() => {
                     throw new Error('Failed to waitForPageHeaderToAppear');
@@ -58,13 +58,21 @@ class Bet365MyBetsPageHelper {
      */
     async checkLoggedIn() {
         try {
-            const loggedInContainerSearchResult = await this.page.waitForSelector('.hm-MainHeaderRHSLoggedInWide', { timeout: 5000 })
-                .then(() => ({ exists: true }))
-                .catch(() => ({ exists: false }));
-
-            const loggedOutContainerSearchResult = await this.page.waitForSelector('.hm-MainHeaderRHSLoggedOutWide_Login', { timeout: 5000 })
-                .then(() => ({ exists: true }))
-                .catch(() => ({ exists: false }));
+            const [
+                loggedInContainerSearchResult,
+                loggedOutContainerSearchResult,
+            ] = await repeatedAsyncOperationExecutor({
+                operation: async () => Promise.all([
+                    this.page.$('.hm-MainHeaderRHSLoggedInWide').then((el) => ({ exists: el !== null })).catch(() => ({ exists: false })),
+                    this.page.$('.hm-MainHeaderRHSLoggedOutWide_Login').then((el) => ({ exists: el !== null })).catch(() => ({ exists: false })),
+                ]),
+                predicate: ([liRes, loRes]) => (liRes.exists === true && loRes.exists === false) || (liRes.exists === false && loRes.exists === true),
+                timeout: 50,
+                attempts: 50,
+            })
+                .catch(() => {
+                    throw new Error('Failed to get login status');
+                });
 
             return loggedInContainerSearchResult.exists === true && loggedOutContainerSearchResult.exists === false;
         } catch (error) {
