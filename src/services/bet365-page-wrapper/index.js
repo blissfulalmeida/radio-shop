@@ -251,16 +251,6 @@ class Bet365PageWrapper {
 
             logger.info(`${this.cycleNumber}: Bets container appeared`);
 
-            const noBetsContainerExists = await bet365MyBetsPageHelper.checkIfEmptyBetsContainerExists();
-
-            logger.info(`${this.cycleNumber}: No bets container visible: ${noBetsContainerExists ? 'YES' : 'NO'}`);
-
-            if (noBetsContainerExists) {
-                logger.info(`${this.cycleNumber}: No bets found`);
-
-                return;
-            }
-
             await bet365MyBetsPageHelper.waitForBetItemsContainerToAppear();
 
             logger.info(`${this.cycleNumber}: Bet items container appeared`);

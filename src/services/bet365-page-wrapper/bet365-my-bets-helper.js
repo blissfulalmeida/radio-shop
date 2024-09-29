@@ -66,15 +66,12 @@ class Bet365MyBetsPageHelper {
                 predicate: ([liRes, loRes]) => (liRes.exists === true && loRes.exists === false) || (liRes.exists === false && loRes.exists === true),
                 timeout: 50,
                 attempts: 50,
-            })
-                .catch(() => {
-                    throw new Error('Failed to get login status');
-                });
+            });
 
             return loggedInContainerSearchResult.exists === true && loggedOutContainerSearchResult.exists === false;
         } catch (error) {
             throw new CustomBet365HeplerError(
-                `Failed to checkLoggedIn: ${error.message}`,
+                'Failed to checkLoggedIn',
                 BET365_PAGE_WRAPPER_ERROR.FAILED_TO_CHECK_LOGGED_IN,
             );
         }
@@ -90,13 +87,10 @@ class Bet365MyBetsPageHelper {
                 predicate: (el) => el,
                 timeout: 50,
                 attempts: 50,
-            })
-                .catch(() => {
-                    throw new Error('Failed to wait for bets header to appear');
-                });
+            });
         } catch (error) {
             throw new CustomBet365HeplerError(
-                `Failed waiting for bets selection header to appear: ${error.message}`,
+                'Failed waiting for bets selection header to appear',
                 BET365_PAGE_WRAPPER_ERROR.FAILED_TO_WAIT_FOR_BETS_HEADER,
             );
         }
@@ -132,30 +126,16 @@ class Bet365MyBetsPageHelper {
      */
     async waitForBetsContainerToAppear() {
         try {
-            await this.page.waitForSelector('.myb-BetItemsContainer', { timeout: 30000 })
-                .catch(() => { throw new Error('Failed to find myb-BetItemsContainer '); });
+            await repeatedAsyncOperationExecutor({
+                operation: () => this.page.$('.myb-BetItemsContainer'),
+                predicate: (el) => el,
+                timeout: 50,
+                attempts: 50,
+            });
         } catch (error) {
             throw new CustomBet365HeplerError(
-                `waitForBetsContainerToAppear failed: ${error.message}`,
+                'waitForBetsContainerToAppear failed',
                 BET365_PAGE_WRAPPER_ERROR.FAILED_TO_WAIT_FOR_BETS_CONTAINER,
-            );
-        }
-    }
-
-    /**
-     * @returns {Promise<boolean>}
-     */
-    async checkIfEmptyBetsContainerExists() {
-        try {
-            const emptyBetsContainerResult = await this.page.waitForSelector('.BetItemsContainer_EmptyMessage', { timeout: 5000 })
-                .then(() => ({ isEmpty: true }))
-                .catch(() => ({ isEmpty: false }));
-
-            return emptyBetsContainerResult.isEmpty;
-        } catch (error) {
-            throw new CustomBet365HeplerError(
-                `checkIfEmptyBetsContainerExists failed: ${error.message}`,
-                BET365_PAGE_WRAPPER_ERROR.FAILED_TO_CHECK_IF_EMPTY_BETS_CONTAINER_EXISTS,
             );
         }
     }
@@ -165,8 +145,12 @@ class Bet365MyBetsPageHelper {
      */
     async waitForBetItemsContainerToAppear() {
         try {
-            await this.page.waitForSelector('.myb-BetItemsContainer_Container', { timeout: 30000 })
-                .catch(() => { throw new Error('Failed to find myb-BetItemsContainer_BetItemsContainer'); });
+            await repeatedAsyncOperationExecutor({
+                operation: () => this.page.$('.myb-BetItemsContainer_Container'),
+                predicate: (el) => el,
+                timeout: 50,
+                attempts: 50,
+            });
         } catch (error) {
             throw new CustomBet365HeplerError(
                 `waitForBetItemsContainerToAppear failed: ${error.message}`,

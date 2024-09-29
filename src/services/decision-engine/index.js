@@ -92,6 +92,9 @@ class DecisionEngine {
 
         /** @type {BetData[]} */
         const currentBets = _.cloneDeep(this.storage.get('openBets') || []);
+
+        currentBets.forEach((bet) => { bet.metadata = bet.metadata || {}; });
+
         const betsMap = currentBets.reduce((acc, bet) => acc.set(bet.key, bet), new Map());
 
         // eslint-disable-next-line no-restricted-syntax
@@ -110,7 +113,6 @@ class DecisionEngine {
             } else {
                 const existingBet = betsMap.get(bet.key);
 
-                existingBet.metadata = existingBet.metadata || {};
                 existingBet.metadata.lastSeenAt = moment.utc().toISOString();
 
                 if (!existingBet.metadata.firstSeenAt) {
