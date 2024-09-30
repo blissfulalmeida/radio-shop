@@ -245,7 +245,7 @@ class Bet365PageWrapper {
 
             await bet365MyBetsPageHelper.clickOnUnsettledBets();
 
-            logger.info(`${this.cycleNumber}: Clicked on all bets`);
+            logger.info(`${this.cycleNumber}: Clicked on unsettled bets`);
 
             await bet365MyBetsPageHelper.waitForBetsContainerToAppear();
 
