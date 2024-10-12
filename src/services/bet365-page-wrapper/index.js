@@ -263,7 +263,7 @@ class Bet365PageWrapper {
 
             const $ = cheerio.load(allBetsInnerHtml);
 
-            const betItems = $('div.myb-OpenBetItem, div.myb-SettledBetItem').slice(0, 10);
+            const betItems = $('div.myb-OpenBetItem, div.myb-SettledBetItem');
 
             if (NEED_TO_SAVE_HTML) {
                 const folderName = `bets-${moment.utc().format('YYYY-MM-DD-HH-mm-ss')}`;
