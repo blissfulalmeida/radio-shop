@@ -52,7 +52,7 @@ class OpenBetDataExtractor {
                 betDict.odd = odds.eq(0).text().trim();
             }
 
-            if (betDict.stake === '' || betDict.side === '' || betDict.market === '') {
+            if (betDict.stake === '' && betDict.side === '' && betDict.market === '') {
                 return null;
             }
 
@@ -130,7 +130,7 @@ class SetteledBetDataExtractor {
 
             betDict.cashedOut = $(this.betElement).text().includes('Cashed Out') || false;
 
-            if (betDict.stake === '' || betDict.side === '' || betDict.market === '') {
+            if (betDict.stake === '' && betDict.side === '' && betDict.market === '') {
                 return null;
             }
 
