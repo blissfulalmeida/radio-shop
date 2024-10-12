@@ -99,10 +99,10 @@ class Bet365MyBetsPageHelper {
     /**
      * @returns {Promise<void>}
      */
-    async clickOnUnsettledBets() {
+    async clickOnFilterBets(betsFilter) {
         try {
             const element = await repeatedAsyncOperationExecutor({
-                operation: () => this.page.$('.myb-MyBetsHeader_Scroller > div[data-content="Unsettled"]'),
+                operation: () => this.page.$(`.myb-MyBetsHeader_Scroller > div[data-content="${betsFilter}"]`),
                 predicate: (el) => el,
                 timeout: 50,
                 attempts: 50,
@@ -177,7 +177,7 @@ class Bet365MyBetsPageHelper {
             for (const item of betItems) {
                 const classNames = await item.evaluate((el) => el.className);
 
-                if (classNames.includes('_DefaultCollapsed')) {
+                if (classNames.includes('Collapsed')) {
                     const box = await item.boundingBox();
 
                     if (box) {

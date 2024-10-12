@@ -23,6 +23,8 @@ class StorageCleaner {
         }, cycleInterval);
 
         logger.info('Starting storage cleaner. Cycle interval:', cycleInterval);
+
+        this.clean();
     }
 
     clean() {
@@ -32,9 +34,7 @@ class StorageCleaner {
         const activeBets = [];
 
         openBets.forEach((bet) => {
-            if (!bet.metadata) {
-                activeBets.push(bet);
-
+            if (!bet.metadata || !bet.metadata.lastSeenAt) {
                 return;
             }
 
@@ -48,6 +48,27 @@ class StorageCleaner {
         });
 
         this.storage.set('openBets', activeBets);
+
+        /** @type {BetData[]} */
+        const settledCashedOutBets = this.storage.get('settledCashedOutBets');
+
+        const activeSettledCashedOutBets = [];
+
+        settledCashedOutBets.forEach((bet) => {
+            if (!bet.metadata || !bet.metadata.lastSeenAt) {
+                return;
+            }
+
+            const isExpired = moment().diff(moment(bet.metadata.lastSeenAt), 'seconds') > this.deleteAfterSeconds;
+
+            if (isExpired) {
+                logger.info(`Bet expired, removing from storage: ${JSON.stringify(bet)}`);
+            } else {
+                activeSettledCashedOutBets.push(bet);
+            }
+        });
+
+        this.storage.set('settledCashedOutBets', activeSettledCashedOutBets);
     }
 }
 

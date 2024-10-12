@@ -63,7 +63,7 @@ class DecisionEngine {
         }
 
         this.inactivityTimeout = setTimeout(() => {
-            this.telegramNotifier.sendInactivityNotification();
+            this.telegramNotifier.sendInactivityNotification(SEND_INACTIVITY_NOTIFICATION_AFTER_MINUTES);
         }, minutes(SEND_INACTIVITY_NOTIFICATION_AFTER_MINUTES));
     }
 
@@ -82,13 +82,13 @@ class DecisionEngine {
     }
 
     /**
-     * @param {BetData[]} bets
+     * @param {BetData[]} openBets
      */
-    handleFetchedOpenBets(bets) {
+    handleOpenBets(openBets) {
         this.cancelScheduledCustomErrorNotification();
         this.reenableInactivityTimeout();
 
-        logger.info(`Received ${bets.length} open bets: ${JSON.stringify(bets)}`);
+        logger.info(`Received ${openBets.length} open bets: ${JSON.stringify(openBets)}`);
 
         /** @type {BetData[]} */
         const currentBets = _.cloneDeep(this.storage.get('openBets') || []);
@@ -98,7 +98,7 @@ class DecisionEngine {
         const betsMap = currentBets.reduce((acc, bet) => acc.set(bet.key, bet), new Map());
 
         // eslint-disable-next-line no-restricted-syntax
-        for (const bet of _.cloneDeep(bets)) {
+        for (const bet of _.cloneDeep(openBets)) {
             const betExistsInStorage = betsMap.has(bet.key);
 
             if (!betExistsInStorage) {
@@ -110,6 +110,62 @@ class DecisionEngine {
                 betsMap.set(bet.key, bet);
 
                 this.telegramNotifier.sendNewBetMessage(bet);
+            } else {
+                const existingBet = betsMap.get(bet.key);
+
+                existingBet.metadata = existingBet.metadata || {};
+                existingBet.metadata.lastSeenAt = moment.utc().toISOString();
+
+                if (!existingBet.metadata.firstSeenAt) {
+                    existingBet.metadata.firstSeenAt = moment.utc().toISOString();
+                }
+            }
+        }
+
+        const updatedSortedBets = Array.from(betsMap.values()).sort((a, b) => {
+            const aTime = moment(a.metadata.lastSeenAt);
+            const bTime = moment(b.metadata.lastSeenAt);
+
+            if (aTime.isBefore(bTime)) {
+                return -1;
+            }
+
+            if (aTime.isAfter(bTime)) {
+                return 1;
+            }
+
+            return 0;
+        });
+
+        this.storage.set('openBets', updatedSortedBets);
+    }
+
+    /**
+     * @param {BetData[]} settledCachedOutBets
+     */
+    handleSettledCashOutBets(settledCachedOutBets) {
+        logger.info(`Received ${settledCachedOutBets.length} setteld cashed out bets: ${JSON.stringify(settledCachedOutBets)}`);
+
+        /** @type {BetData[]} */
+        const currentBets = _.cloneDeep(this.storage.get('settledCashedOutBets') || []);
+
+        currentBets.forEach((bet) => { bet.metadata = bet.metadata || {}; });
+
+        const betsMap = currentBets.reduce((acc, bet) => acc.set(bet.key, bet), new Map());
+
+        // eslint-disable-next-line no-restricted-syntax
+        for (const bet of _.cloneDeep(settledCachedOutBets)) {
+            const betExistsInStorage = betsMap.has(bet.key);
+
+            if (!betExistsInStorage) {
+                bet.metadata = {
+                    firstSeenAt: moment.utc().toISOString(),
+                    lastSeenAt: moment.utc().toISOString(),
+                };
+
+                betsMap.set(bet.key, bet);
+
+                this.telegramNotifier.sendsCashedOutBetMessage(bet);
             } else {
                 const existingBet = betsMap.get(bet.key);
 
@@ -136,7 +192,7 @@ class DecisionEngine {
             return 0;
         });
 
-        this.storage.set('openBets', updatedSortedBets);
+        this.storage.set('settledCashedOutBets', updatedSortedBets);
     }
 
     /**

@@ -3,7 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const cheerio = require('cheerio');
-const { OpenBetDataExtractor } = require('../src/services/bet365-page-wrapper/open-bet-data-extractor');
+const { OpenBetDataExtractor } = require('../src/services/bet365-page-wrapper/bet-data-extractor');
 
 const main = async () => {
     try {

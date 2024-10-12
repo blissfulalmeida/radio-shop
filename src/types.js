@@ -41,6 +41,7 @@
  * @property {string} team1Name
  * @property {string} team2Name
  * @property {string} odd
+ * @property {boolean | null} cashedOut
  * @property {Metadata} metadata
  */
 

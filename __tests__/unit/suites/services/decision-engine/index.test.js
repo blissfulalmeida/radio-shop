@@ -25,7 +25,7 @@ describe('DecisionEngine', () => {
 
         const decisionEngine = new DecisionEngine(storageMock, telegramNotifier);
 
-        decisionEngine.handleFetchedOpenBets([]);
+        decisionEngine.handleOpenBets([]);
 
         expect(storageMock.get).toHaveBeenCalledTimes(1);
         expect(storageMock.get.mock.calls[0][0]).toBe('openBets');
@@ -62,7 +62,7 @@ describe('DecisionEngine', () => {
             },
         ];
 
-        decisionEngine.handleFetchedOpenBets(newBets);
+        decisionEngine.handleOpenBets(newBets);
 
         const updatedBets = storageMock.set.mock.calls[0][1];
 
@@ -119,7 +119,7 @@ describe('DecisionEngine', () => {
             },
         ];
 
-        decisionEngine.handleFetchedOpenBets(newBets);
+        decisionEngine.handleOpenBets(newBets);
 
         const updatedBets = storageMock.set.mock.calls[0][1];
         const savedBet = updatedBets[0];
@@ -180,7 +180,7 @@ describe('DecisionEngine', () => {
             },
         ];
 
-        decisionEngine.handleFetchedOpenBets(newBets);
+        decisionEngine.handleOpenBets(newBets);
 
         const updatedBets = storageMock.set.mock.calls[0][1];
 

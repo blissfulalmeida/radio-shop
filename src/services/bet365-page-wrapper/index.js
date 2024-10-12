@@ -7,7 +7,7 @@ const cheerio = require('cheerio');
 const { createLogger } = require('../../components/logger');
 const { Bet365MyBetsPageHelper } = require('./bet365-my-bets-helper');
 const { beautifyHTML } = require('../../components/util');
-const { OpenBetDataExtractor } = require('./open-bet-data-extractor');
+const { OpenBetDataExtractor, SetteledBetDataExtractor } = require('./bet-data-extractor');
 const { BET_365_STATE } = require('../../constants');
 
 const logger = createLogger(module);
@@ -243,7 +243,12 @@ class Bet365PageWrapper {
 
             logger.info(`${this.cycleNumber}: Bets header appeared`);
 
-            await bet365MyBetsPageHelper.clickOnUnsettledBets();
+            // When the page is not reloaded and the bet is cashed out - it can not be opened unless a tab switch will be made
+            if (this.cycleNumber % 20 === 0) {
+                await bet365MyBetsPageHelper.clickOnFilterBets('Settled');
+            }
+
+            await bet365MyBetsPageHelper.clickOnFilterBets('All');
 
             logger.info(`${this.cycleNumber}: Clicked on unsettled bets`);
 
@@ -282,6 +287,7 @@ class Bet365PageWrapper {
             }
 
             const openBets = [];
+            const settledCashOutBets = [];
 
             Array.from(betItems).forEach((betElement) => {
                 const className = betElement.attribs.class || '';
@@ -293,12 +299,20 @@ class Bet365PageWrapper {
                     if (betData) {
                         openBets.push(betData);
                     }
+                } else if (className.includes('myb-SettledBetItem')) {
+                    const extractor = new SetteledBetDataExtractor(betElement);
+                    const betData = extractor.extractBetData();
+
+                    if (betData && betData.cashedOut) {
+                        settledCashOutBets.push(betData);
+                    }
                 }
             });
 
-            this.decisionEngine.handleFetchedOpenBets(openBets);
+            this.decisionEngine.handleOpenBets(openBets);
+            this.decisionEngine.handleSettledCashOutBets(settledCashOutBets);
 
-            logger.info(`${this.cycleNumber}: Fetched cycle`);
+            logger.info(`${this.cycleNumber}: Cycle end`);
         } catch (error) {
             this.decisionEngine.handleError(error);
         }

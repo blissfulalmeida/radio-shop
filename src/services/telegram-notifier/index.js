@@ -77,6 +77,17 @@ class TelegramNotifier {
     }
 
     /**
+     * @param {BetData} bet
+     */
+    async sendsCashedOutBetMessage(bet) {
+        const formattedbetMessage = `Team 1: ${bet.team1Name || '-'}\nTeam 2: ${bet.team2Name || '-'}\nMarket: ${bet.market || '-'}\nSide: ${bet.side || '-'}\nStake: ${bet.stake || '-'}\nOdd: ${bet.odd || '-'}`;
+
+        logger.info(`TELEGRAM_NOTIFIER: Sending casged out bet message: ${formattedbetMessage}`);
+
+        await this._sendMainChannelTelegramMessage(`#${this.bet365Account}\nCashed out:\n${formattedbetMessage}`, true);
+    }
+
+    /**
      * @param {string} message
      */
     async sendErrorNotification(message) {
@@ -94,10 +105,10 @@ class TelegramNotifier {
         this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\nCustom error: ${message}`);
     }
 
-    async sendInactivityNotification() {
+    async sendInactivityNotification(minutes) {
         logger.info('TELEGRAM_NOTIFIER: Sending inactivity notification');
 
-        this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\nInactive for 5 minutes`);
+        this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\nInactive for ${minutes} minutes`);
     }
 }
 

@@ -1,14 +1,15 @@
 const fs = require('fs');
 const path = require('path');
 const cheerio = require('cheerio');
-const { OpenBetDataExtractor } = require('../src/services/bet365-page-wrapper/open-bet-data-extractor');
+const { OpenBetDataExtractor, SetteledBetDataExtractor } = require('../src/services/bet365-page-wrapper/bet-data-extractor');
 
-const html = fs.readFileSync(path.resolve(__dirname, '..', 'crawled-2', 'bets-2024-09-24T11:35:42.588Z.html'), 'utf8');
+const html = fs.readFileSync(path.resolve(__dirname, '..', 'crawled', 'bets-2024-10-12-06-25-59', '0.html'), 'utf8');
 const $ = cheerio.load(html);
 
 const betItems = $('div.myb-OpenBetItem, div.myb-SettledBetItem');
 
 const openBets = [];
+const settledBets = [];
 
 Array.from(betItems).forEach((betElement) => {
     const className = betElement.attribs.class || '';
@@ -22,7 +23,17 @@ Array.from(betItems).forEach((betElement) => {
         } else {
             console.log('Failed to extract bet data');
         }
+    } else if (className.includes('myb-SettledBetItem')) {
+        const extractor = new SetteledBetDataExtractor(betElement);
+        const betData = extractor.extractBetData();
+
+        if (betData) {
+            settledBets.push(betData);
+        } else {
+            console.log('Failed to extract bet data');
+        }
     }
 });
 
 console.log(JSON.stringify(openBets, null, 4));
+console.log(JSON.stringify(settledBets, null, 4));
