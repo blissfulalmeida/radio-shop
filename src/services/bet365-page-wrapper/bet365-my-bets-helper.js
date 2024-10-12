@@ -101,7 +101,12 @@ class Bet365MyBetsPageHelper {
      */
     async clickOnUnsettledBets() {
         try {
-            const element = await this.page.waitForSelector('.myb-MyBetsHeader_Scroller > div[data-content="Unsettled"]', { visible: true, timeout: 10000 });
+            const element = await repeatedAsyncOperationExecutor({
+                operation: () => this.page.$('.myb-MyBetsHeader_Scroller > div[data-content="Unsettled"]'),
+                predicate: (el) => el,
+                timeout: 50,
+                attempts: 50,
+            });
 
             const box = await element.boundingBox();
 
