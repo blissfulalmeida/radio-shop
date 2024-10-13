@@ -12,14 +12,21 @@ const logger = createLogger(module);
 const SEND_INACTIVITY_NOTIFICATION_AFTER_MINUTES = 2;
 const SEND_CUSTOM_ERROR_NOTIFICATION_AFTER_MINUTES = 2;
 
+/**
+ * TODO:
+ * Seems like the open and settled bets are indeed very similar - it is worht considering refactoring them into a single model
+ */
+
 class DecisionEngine {
     /**
      * @param {import('../storage').SimpleFileBasedStorage} storage
      * @param {import('../telegram-notifier').TelegramNotifier} telegramNotifier
+     * @param {import('../proxy-manager').ProxyManager} proxyManager
      */
-    constructor(storage, telegramNotifier) {
+    constructor(storage, telegramNotifier, proxyManager) {
         this.storage = storage;
         this.telegramNotifier = telegramNotifier;
+        this.proxyManager = proxyManager;
 
         /**
          * @type {string|null}
@@ -63,7 +70,8 @@ class DecisionEngine {
         }
 
         this.inactivityTimeout = setTimeout(() => {
-            this.telegramNotifier.sendInactivityNotification(SEND_INACTIVITY_NOTIFICATION_AFTER_MINUTES);
+            this.fireInactivityNotification();
+            this.reenableInactivityTimeout();
         }, minutes(SEND_INACTIVITY_NOTIFICATION_AFTER_MINUTES));
     }
 
@@ -144,6 +152,9 @@ class DecisionEngine {
      * @param {BetData[]} settledCachedOutBets
      */
     handleSettledCashOutBets(settledCachedOutBets) {
+        this.cancelScheduledCustomErrorNotification();
+        this.reenableInactivityTimeout();
+
         logger.info(`Received ${settledCachedOutBets.length} setteld cashed out bets: ${JSON.stringify(settledCachedOutBets)}`);
 
         /** @type {BetData[]} */
@@ -204,7 +215,7 @@ class DecisionEngine {
 
             this.scheduleCustomErrorNotification(error);
         } else {
-            this.telegramNotifier.sendErrorNotification(error.message);
+            this.telegramNotifier.sendUnknownErrorMessage(error.message);
         }
     }
 
@@ -236,11 +247,31 @@ class DecisionEngine {
             return;
         }
 
-        this.telegramNotifier.sendCustomErrorNotification(`Occured 2 minutes ago and has not been resolved yet\n${this.customError.code}: ${this.customError.message}`);
-
         clearTimeout(this.customErrorNotificationTimeout);
         this.customErrorNotificationTimeout = null;
         this.customError = null;
+
+        this.telegramNotifier.sendCustomErrorMessage(`Occured ${SEND_CUSTOM_ERROR_NOTIFICATION_AFTER_MINUTES} minutes ago and has not been resolved yet\n${this.customError.code}: ${this.customError.message}`);
+        this.reloadProxy();
+    }
+
+    fireInactivityNotification() {
+        this.telegramNotifier.sendInactivityMessage(SEND_INACTIVITY_NOTIFICATION_AFTER_MINUTES);
+        this.reloadProxy();
+    }
+
+    async reloadProxy() {
+        const proxyReloadResponse = this.proxyManager.reloadProxy();
+
+        let messsage;
+
+        if (proxyReloadResponse.status === 'success') {
+            messsage = `Proxy reloaded successfully: ${JSON.stringify(proxyReloadResponse.res)}`;
+        } else {
+            messsage = `Failed to reload proxy: ${proxyReloadResponse.error.message}`;
+        }
+
+        this.telegramNotifier.sendMainChannelMessage(messsage);
     }
 }
 

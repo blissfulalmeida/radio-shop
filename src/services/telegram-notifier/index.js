@@ -16,6 +16,7 @@ class TelegramNotifier {
 
     /**
      * @param {string} message
+     * @param {boolean} makeCall
      */
     async _sendMainChannelTelegramMessage(message, makeCall = false) {
         axios({
@@ -65,6 +66,12 @@ class TelegramNotifier {
         this._sendMainChannelTelegramMessage(`#${this.bet365Account}\nLogged in`);
     }
 
+    async sendMainChannelMessage(message, makeCall = false) {
+        logger.info(`TELEGRAM_NOTIFIER: Sending main channel message: ${message}`);
+
+        this._sendMainChannelTelegramMessage(`#${this.bet365Account}\n${message}`, makeCall);
+    }
+
     /**
      * @param {BetData} bet
      */
@@ -90,22 +97,22 @@ class TelegramNotifier {
     /**
      * @param {string} message
      */
-    async sendErrorNotification(message) {
+    async sendUnknownErrorMessage(message) {
         logger.info(`TELEGRAM_NOTIFIER: Sending error notification: ${message}`);
 
-        this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\nError: ${message}`);
+        this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\nUnknown error: ${message}`);
     }
 
     /**
      * @param {string} message
      */
-    async sendCustomErrorNotification(message) {
+    async sendCustomErrorMessage(message) {
         logger.info(`TELEGRAM_NOTIFIER: Sending custom error notification: ${message}`);
 
         this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\nCustom error: ${message}`);
     }
 
-    async sendInactivityNotification(minutes) {
+    async sendInactivityMessage(minutes) {
         logger.info('TELEGRAM_NOTIFIER: Sending inactivity notification');
 
         this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\nInactive for ${minutes} minutes`);

@@ -9,6 +9,7 @@ const { TelegramNotifier } = require('./services/telegram-notifier');
 const { SimpleFileBasedStorage } = require('./services/storage');
 const { DecisionEngine } = require('./services/decision-engine');
 const { StorageCleaner } = require('./services/storage-cleaner');
+const { ProxyManager } = require('./services/proxy-manager');
 
 const logger = createLogger(module);
 
@@ -39,7 +40,8 @@ const validateConfig = () => {
 
         const storage = new SimpleFileBasedStorage(path.resolve(storageDirectory, `${config.get('bet365.account')}.json`));
         const telegramNotifier = new TelegramNotifier();
-        const decisionEngine = new DecisionEngine(storage, telegramNotifier);
+        const proxyManager = new ProxyManager();
+        const decisionEngine = new DecisionEngine(storage, telegramNotifier, proxyManager);
         const octoBrowserApi = new OctoBrowserApi();
         const storageCleaner = new StorageCleaner(storage, config.get('storage.openBets.deleteAfterSeconds'));
 
