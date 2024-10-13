@@ -24,4 +24,7 @@ module.exports = {
         },
         webHookUrl: 'CB_CALL_WEB_HOOK_URL',
     },
+    proxy: {
+        reloadUrl: 'CB_PROXY_RELOAD_URL',
+    },
 };

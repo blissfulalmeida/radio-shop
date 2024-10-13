@@ -8,7 +8,7 @@ class ProxyManager {
     async reloadProxy() {
         const prixyReloadResponse = await axios({
             method: 'get',
-            url: config.get('proxyManager.reloadUrl'),
+            url: config.get('proxy.reloadUrl'),
         })
             .then((response) => ({ status: 'success', res: response.data }))
             .catch((error) => ({ status: 'error', error: error.message }));

@@ -247,12 +247,12 @@ class DecisionEngine {
             return;
         }
 
+        this.telegramNotifier.sendCustomErrorMessage(`Occured ${SEND_CUSTOM_ERROR_NOTIFICATION_AFTER_MINUTES} minutes ago and has not been resolved yet\n${this.customError.code}: ${this.customError.message}`);
+        this.reloadProxy();
+
         clearTimeout(this.customErrorNotificationTimeout);
         this.customErrorNotificationTimeout = null;
         this.customError = null;
-
-        this.telegramNotifier.sendCustomErrorMessage(`Occured ${SEND_CUSTOM_ERROR_NOTIFICATION_AFTER_MINUTES} minutes ago and has not been resolved yet\n${this.customError.code}: ${this.customError.message}`);
-        this.reloadProxy();
     }
 
     fireInactivityNotification() {
@@ -261,7 +261,7 @@ class DecisionEngine {
     }
 
     async reloadProxy() {
-        const proxyReloadResponse = this.proxyManager.reloadProxy();
+        const proxyReloadResponse = await this.proxyManager.reloadProxy();
 
         let messsage;
 
