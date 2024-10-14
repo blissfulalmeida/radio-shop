@@ -63,11 +63,15 @@ class DecisionEngine {
         this.reenableInactivityTimeout();
     }
 
-    reenableInactivityTimeout() {
+    clearInactivityTimeout() {
         if (this.inactivityTimeout) {
             clearTimeout(this.inactivityTimeout);
             this.inactivityTimeout = null;
         }
+    }
+
+    reenableInactivityTimeout() {
+        this.clearInactivityTimeout();
 
         this.inactivityTimeout = setTimeout(() => {
             this.fireInactivityNotification();
@@ -83,6 +87,9 @@ class DecisionEngine {
         logger.info(`State changed from ${oldState} to ${newState}`);
 
         if (newState === BET_365_STATE.LOGGED_OUT) {
+            this.cancelScheduledCustomErrorNotification();
+            this.clearInactivityTimeout();
+
             this.telegramNotifier.sendLoggedOutMessage();
         } else if (newState === BET_365_STATE.LOGGED_IN) {
             this.telegramNotifier.sendLoggedInMessage();
