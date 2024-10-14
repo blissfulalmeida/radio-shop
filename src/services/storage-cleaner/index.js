@@ -29,7 +29,7 @@ class StorageCleaner {
 
     clean() {
         /** @type {BetData[]} */
-        const openBets = this.storage.get('openBets');
+        const openBets = this.storage.get('openBets') || [];
 
         const activeBets = [];
 
@@ -50,7 +50,7 @@ class StorageCleaner {
         this.storage.set('openBets', activeBets);
 
         /** @type {BetData[]} */
-        const settledCashedOutBets = this.storage.get('settledCashedOutBets');
+        const settledCashedOutBets = this.storage.get('settledCashedOutBets') || [];
 
         const activeSettledCashedOutBets = [];
 
