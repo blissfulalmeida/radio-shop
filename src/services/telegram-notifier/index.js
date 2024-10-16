@@ -26,10 +26,28 @@ class TelegramNotifier {
             .then(() => { logger.info('TELEGRAM_NOTIFIER: Message sent'); })
             .catch((error) => { logger.error(`NOTIFIER_ERROR:: Failed to send main channel message - ${message}. Error - ${error.message}`); });
 
+        // Prepare the payload for the second notification if required
+        const payload = {
+            token: "a3hho1hetck7673osy6e7opc8tvtrw",
+            user: "udzz53bo13vmrehmt6hdkujup5nzdy",
+            message: message,
+            sound: "Bigfoot",
+            priority: 2,
+            device: "clap",
+            retry: 30,
+            expire: 360
+        };
+
+        const callWebHookUrl = "https://api.pushover.net/1/messages.json";
+
         if (this.callShouldBeInitiated && makeCall) {
             axios({
                 method: 'post',
-                url: this.callWebHookUrl,
+                url: callWebHookUrl,
+                data: payload,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
             })
                 .then(() => { logger.info('TELEGRAM_NOTIFIER: Call made'); })
                 .catch((error) => { logger.error(`TELEGRAM_NOTIFIER:: Failed to make call: ${error.message}`); });
