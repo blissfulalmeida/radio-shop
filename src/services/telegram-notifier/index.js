@@ -28,8 +28,8 @@ class TelegramNotifier {
 
         // Prepare the payload for the second notification if required
         const payload = {
-            token: "a3hho1hetck7673osy6e7opc8tvtrw",
-            user: "udzz53bo13vmrehmt6hdkujup5nzdy",
+            token: "",
+            user: "",
             message: message,
             sound: "Bigfoot",
             priority: 2,

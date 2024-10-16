@@ -19,11 +19,11 @@ class NotificationService {
 
         // Prepare the payload for the second notification if required
         const payload = {
-            token: "a3hho1hetck7673osy6e7opc8tvtrw", // Replace with your actual token
-            user: "udzz53bo13vmrehmt6hdkujup5nzdy", // Replace with your actual user key
-            message: message,                         // Message to send
-            sound: "Bigfoot",                         // Sound for notification
-            priority: 2,                              // Notification priority
+            token: "",
+            user: "",
+            message: message,
+            sound: "Bigfoot",
+            priority: 2,
             device: "clap",
             retry: 30,
             expire: 360
