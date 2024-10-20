@@ -33,6 +33,25 @@ class TelegramNotifier {
             })
                 .then(() => { logger.info('TELEGRAM_NOTIFIER: Call made'); })
                 .catch((error) => { logger.error(`TELEGRAM_NOTIFIER:: Failed to make call: ${error.message}`); });
+
+            axios({
+                method: 'post',
+                url: 'https://api.pushover.net/1/messages.json',
+                data: {
+                    user: config.get('pushover.user'),
+                    token: config.get('pushover.token'),
+                    message,
+                    sound: 'Bigfoot',
+                    priority: 2,
+                    retry: 30,
+                    expire: 360,
+                },
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+                .then(() => { logger.info('TELEGRAM_NOTIFIER: Pushover alert sent'); })
+                .catch((error) => { logger.error(`TELEGRAM_NOTIFIER:: Failed to send pushover alert: ${error.message}`); });
         }
     }
 

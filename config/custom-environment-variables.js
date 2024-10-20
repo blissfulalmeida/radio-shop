@@ -27,4 +27,8 @@ module.exports = {
     proxy: {
         reloadUrl: 'CB_PROXY_RELOAD_URL',
     },
+    pushover: {
+        token: 'CB_PUSHOVER_TOKEN',
+        user: 'CB_PUSHOVER_USER',
+    },
 };
