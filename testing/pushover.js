@@ -9,8 +9,8 @@ class NotificationService {
             method: 'post',
             url: 'https://api.pushover.net/1/messages.json',
             data: {
-                user: 'gsjco4zei16113pfx5sr27iyvg5koc',
-                token: 'a3hho1hetck7673osy6e7opc8tvtrw',
+                token: config.get('pushover.token'),
+                user: config.get('pushover.user'),
                 message,
                 sound: 'Bigfoot',
                 priority: 2,
@@ -26,29 +26,17 @@ class NotificationService {
     }
 }
 
-// axios({
-//     method: 'post',
-//     url: 'https://api.pushover.net/1/messages.json',
-//     data: {
-//         user: config.get('pushover.user'),
-//         token: config.get('pushover.token'),
-//         message,
-//         sound: 'Bigfoot',
-//         priority: 2,
-//         retry: 30,
-//         expire: 360,
-//     },
-//     headers: {
-//         'Content-Type': 'application/json',
-//     },
-// })
-//     .then(() => { logger.info('TELEGRAM_NOTIFIER: Call made'); })
-//     .catch((error) => { logger.error(`TELEGRAM_NOTIFIER:: Failed to make call: ${error.message}`); });
-
 function testNotification() {
     const notificationService = new NotificationService();
 
-    notificationService.send("It's cooking time!");
+    notificationService.send(`#sorrentino36
+New bet:
+Team 1: SK Unicov
+Team 2: FK Hodonin
+Market: 1st Half Goals
+Side: Over 1.5
+Stake: €357.14
+Odd: 2.75`);
 }
 
 testNotification();

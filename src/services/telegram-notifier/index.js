@@ -38,8 +38,8 @@ class TelegramNotifier {
                 method: 'post',
                 url: 'https://api.pushover.net/1/messages.json',
                 data: {
-                    user: config.get('pushover.user'),
                     token: config.get('pushover.token'),
+                    user: config.get('pushover.user'),
                     message,
                     sound: 'Bigfoot',
                     priority: 2,
