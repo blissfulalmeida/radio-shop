@@ -16,4 +16,5 @@ module.exports = {
     call: {
         shouldBeInitiated: true,
     },
+    maxCycleDuration: 1000 * 10,
 };

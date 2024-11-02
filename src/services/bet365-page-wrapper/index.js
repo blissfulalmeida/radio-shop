@@ -4,11 +4,13 @@ const moment = require('moment');
 const config = require('config');
 const puppeteer = require('puppeteer-core');
 const cheerio = require('cheerio');
+const _ = require('lodash');
 const { createLogger } = require('../../components/logger');
 const { Bet365MyBetsPageHelper } = require('./bet365-my-bets-helper');
 const { beautifyHTML } = require('../../components/util');
 const { OpenBetDataExtractor, SetteledBetDataExtractor } = require('./bet-data-extractor');
 const { BET_365_STATE } = require('../../constants');
+const { DurationMeasureTool } = require('../../components/duration-measure-tool');
 
 const logger = createLogger(module);
 
@@ -59,6 +61,10 @@ class Bet365PageWrapper {
             }
 
             await this.page.goto(this.bet365MyBetsPage, { timeout: 30000, waitUntil: 'domcontentloaded' });
+
+            const client = await this.page.target().createCDPSession();
+            await client.send('DOM.enable');
+            await client.send('Overlay.enable');
 
             this._setState(BET_365_STATE.READY);
 
@@ -111,7 +117,7 @@ class Bet365PageWrapper {
         } finally {
             setTimeout(() => {
                 this._leanDataCrawlingTick();
-            }, 1000);
+            }, 500);
         }
     }
 
@@ -210,7 +216,11 @@ class Bet365PageWrapper {
     }
 
     async _executePageAction(reloadPage = true) {
+        const durationMeasureTool = new DurationMeasureTool();
+
         try {
+            durationMeasureTool.addAction('START');
+
             this.cycleNumber += 1;
 
             logger.info(`${this.cycleNumber}: Starting new cycle${reloadPage ? ' (reloading page)' : ' (skipping page reload)'}`);
@@ -219,19 +229,15 @@ class Bet365PageWrapper {
 
             if (reloadPage) {
                 await bet365MyBetsPageHelper.goToPage();
-
-                logger.info(`${this.cycleNumber}: Page reloaded`);
-            } else {
-                logger.info(`${this.cycleNumber}: Page reloaded skipped`);
             }
+
+            durationMeasureTool.addAction('PAGE_RELOADED');
 
             await bet365MyBetsPageHelper.waitForPageHeaderToAppear();
 
-            logger.info(`${this.cycleNumber}: Page header appeared`);
+            durationMeasureTool.addAction('PAGE_HEADER_APPEARED');
 
             const loggedIn = await bet365MyBetsPageHelper.checkLoggedIn();
-
-            logger.info(`${this.cycleNumber}: Logged in: ${loggedIn ? 'YES' : 'NO'}`);
 
             this._setState(loggedIn ? BET_365_STATE.LOGGED_IN : BET_365_STATE.LOGGED_OUT);
 
@@ -241,30 +247,34 @@ class Bet365PageWrapper {
 
             await bet365MyBetsPageHelper.waitForBetsHeaderToAppear();
 
-            logger.info(`${this.cycleNumber}: Bets header appeared`);
+            durationMeasureTool.addAction('BETS_HEADER_APPEARED');
 
             // When the page is not reloaded and the bet is cashed out - it can not be opened unless a tab switch will be made
             if (this.cycleNumber % 20 === 0) {
                 await bet365MyBetsPageHelper.clickOnFilterBets('Settled');
+
+                durationMeasureTool.addAction('CLICKED_SETTLED');
             }
 
             await bet365MyBetsPageHelper.clickOnFilterBets('All');
 
-            logger.info(`${this.cycleNumber}: Clicked on unsettled bets`);
+            durationMeasureTool.addAction('CLICKED_ALL');
 
             await bet365MyBetsPageHelper.waitForBetsContainerToAppear();
 
-            logger.info(`${this.cycleNumber}: Bets container appeared`);
+            durationMeasureTool.addAction('BETS_CONTAINER_APPEARED');
 
             await bet365MyBetsPageHelper.waitForBetItemsContainerToAppear();
 
-            logger.info(`${this.cycleNumber}: Bet items container appeared`);
+            durationMeasureTool.addAction('BET_ITEMS_CONTAINER_APPEARED');
 
             await bet365MyBetsPageHelper.expandCollapsedBets();
 
-            logger.info(`${this.cycleNumber}: Expanded collapsed bets`);
+            durationMeasureTool.addAction('EXPANDED_COLLAPSED');
 
             const allBetsInnerHtml = await bet365MyBetsPageHelper.getAllBetsHtmlOnThePage();
+
+            durationMeasureTool.addAction('GOT_ALL_BETS_HTML');
 
             const $ = cheerio.load(allBetsInnerHtml);
 
@@ -309,12 +319,21 @@ class Bet365PageWrapper {
                 }
             });
 
-            this.decisionEngine.handleOpenBets(openBets);
-            this.decisionEngine.handleSettledCashOutBets(settledCashOutBets);
+            durationMeasureTool.addAction('END');
 
-            logger.info(`${this.cycleNumber}: Cycle end`);
+            const report = durationMeasureTool.report();
+
+            logger.info(`${this.cycleNumber}: Cycle end, report: ${JSON.stringify(_.omit(report, ['actions']))}`);
+
+            this.decisionEngine.handleBets(openBets, settledCashOutBets, report);
         } catch (error) {
-            this.decisionEngine.handleError(error);
+            durationMeasureTool.addAction('ERROR');
+
+            const report = durationMeasureTool.report();
+
+            logger.info(`${this.cycleNumber}: Cycle error - ${error.message}, report: ${JSON.stringify(_.omit(report, ['actions']))}`);
+
+            this.decisionEngine.handleError(error, durationMeasureTool.report());
         }
     }
 }

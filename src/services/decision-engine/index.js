@@ -2,6 +2,7 @@
 
 const _ = require('lodash');
 const moment = require('moment');
+const config = require('config');
 const { createLogger } = require('../../components/logger');
 const { BET_365_STATE } = require('../../constants');
 const { CustomBet365HeplerError } = require('../bet365-page-wrapper/errors');
@@ -9,14 +10,13 @@ const { minutes } = require('../../components/util');
 
 const logger = createLogger(module);
 
-const SEND_INACTIVITY_NOTIFICATION_AFTER_MINUTES = 2;
+const SEND_INACTIVITY_NOTIFICATION_AFTER_MINUTES = 3;
 const SEND_CUSTOM_ERROR_NOTIFICATION_AFTER_MINUTES = 2;
 
 /**
  * TODO:
  * Seems like the open and settled bets are indeed very similar - it is worht considering refactoring them into a single model
  */
-
 class DecisionEngine {
     /**
      * @param {import('../storage').SimpleFileBasedStorage} storage
@@ -57,6 +57,8 @@ class DecisionEngine {
          * This property is used to schedule inactivity notifications
          */
         this.inactivityTimeout = null;
+
+        this.sendNextLongCycleNotificationAfter = null;
     }
 
     init() {
@@ -98,13 +100,43 @@ class DecisionEngine {
 
     /**
      * @param {BetData[]} openBets
-     */
-    handleOpenBets(openBets) {
+     * @param {BetData[]} settledCashedOutBets
+     * @param {DurationMeasureToolReport} report
+     * */
+    handleBets(openBets, settledCashedOutBets, report) {
         this.cancelScheduledCustomErrorNotification();
         this.reenableInactivityTimeout();
 
-        logger.info(`Received ${openBets.length} open bets: ${JSON.stringify(openBets)}`);
+        this.handleOpenBets(openBets);
+        this.handleSettledCashOutBets(settledCashedOutBets);
+        this.handleReport(report);
+    }
 
+    /**
+     * @param {DurationMeasureToolReport} report
+     * */
+    handleReport(report) {
+        const totalDuration = report.totalDuration;
+
+        if (totalDuration > config.get('maxCycleDuration')) {
+            logger.warn(`Cycle duration exceeded the limit. Current duration: ${totalDuration}, limit: ${config.get('maxCycleDuration')}`);
+
+            if (this.sendNextLongCycleNotificationAfter && !moment().isAfter(this.sendNextLongCycleNotificationAfter)) {
+                logger.info('Long cycle notification already sent, skipping');
+
+                return;
+            }
+
+            this.telegramNotifier.sendCycleDurationExceededMessage(JSON.stringify(report, null, 2));
+
+            this.sendNextLongCycleNotificationAfter = moment().add(10, 'minutes');
+        }
+    }
+
+    /**
+     * @param {BetData[]} openBets
+     */
+    handleOpenBets(openBets) {
         /** @type {BetData[]} */
         const currentBets = _.cloneDeep(this.storage.get('openBets') || []);
 
@@ -159,11 +191,6 @@ class DecisionEngine {
      * @param {BetData[]} settledCachedOutBets
      */
     handleSettledCashOutBets(settledCachedOutBets) {
-        this.cancelScheduledCustomErrorNotification();
-        this.reenableInactivityTimeout();
-
-        logger.info(`Received ${settledCachedOutBets.length} setteld cashed out bets: ${JSON.stringify(settledCachedOutBets)}`);
-
         /** @type {BetData[]} */
         const currentBets = _.cloneDeep(this.storage.get('settledCashedOutBets') || []);
 

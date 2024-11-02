@@ -136,6 +136,10 @@ class TelegramNotifier {
 
         this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\nInactive for ${minutes} minutes`);
     }
+
+    async sendCycleDurationExceededMessage(message) {
+        this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\nCycle duration exceeded:\n${message}`);
+    }
 }
 
 module.exports = {

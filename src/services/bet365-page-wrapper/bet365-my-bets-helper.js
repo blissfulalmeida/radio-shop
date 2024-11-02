@@ -99,7 +99,7 @@ class Bet365MyBetsPageHelper {
     /**
      * @returns {Promise<void>}
      */
-    async clickOnFilterBets(betsFilter) {
+    async clickOnFilterBets(betsFilter, durationMeasureTool = null) {
         try {
             const element = await repeatedAsyncOperationExecutor({
                 operation: () => this.page.$(`.myb-MyBetsHeader_Scroller > div[data-content="${betsFilter}"]`),
@@ -108,16 +108,32 @@ class Bet365MyBetsPageHelper {
                 attempts: 50,
             });
 
+            if (durationMeasureTool) {
+                durationMeasureTool.addAction(`CLICK_ON_FILTER_BETS:::${betsFilter}:::ELEMENT_FOUND`);
+            }
+
             const box = await element.boundingBox();
 
+            if (durationMeasureTool) {
+                durationMeasureTool.addAction(`CLICK_ON_FILTER_BETS:::${betsFilter}:::BOUNDING_BOX_FOUND`);
+            }
+
             if (box) {
-                await this.page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 10 });
+                await this.page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 1 });
+            }
+
+            if (durationMeasureTool) {
+                durationMeasureTool.addAction(`CLICK_ON_FILTER_BETS:::${betsFilter}:::MOUSE_MOVE`);
             }
 
             await delay(Math.random() * 500 + 100);
             await this.page.mouse.down();
             await delay(Math.random() * 150 + 50);
             await this.page.mouse.up();
+
+            if (durationMeasureTool) {
+                durationMeasureTool.addAction(`CLICK_ON_FILTER_BETS:::${betsFilter}:::MOUSE_CLICK`);
+            }
         } catch (error) {
             throw new CustomBet365HeplerError(
                 `Failed to clickOnAllBets: ${error.message}`,

@@ -29,8 +29,6 @@
 
 // #endregion
 
-// #endregion
-
 // #region Other
 /**
  * @typedef {Object} BetData
@@ -49,5 +47,18 @@
  * @typedef {Object} Metadata
  * @property {string} firstSeenAt
  * @property {string} lastSeenAt
+ */
+
+/**
+ * @typedef {Object} TimedAction
+ * @property {string} name
+ * @property {number} [createdAt]
+ * @property {number} [duration]
+ */
+
+/**
+ * @typedef {Object} DurationMeasureToolReport
+ * @property {number} totalDuration
+ * @property {TimedAction[]} actions
  */
 // #endregion
