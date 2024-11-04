@@ -39,10 +39,12 @@ class UnknownErrorHandler {
     }
 
     resolveIncident() {
-        this.telegramNotifier.sendResolveUnknownErrorMessage(this.incidentId);
+        if (this.incidentId) {
+            this.telegramNotifier.sendResolveUnknownErrorMessage(this.incidentId);
 
-        this.incidentId = null;
-        this.sendNextUnknownErrorNotificationAfter = null;
+            this.incidentId = null;
+            this.sendNextUnknownErrorNotificationAfter = null;
+        }
     }
 }
 

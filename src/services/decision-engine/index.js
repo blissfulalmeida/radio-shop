@@ -87,6 +87,8 @@ class DecisionEngine {
      * */
     handleBets(openBets, settledCashedOutBets, report) {
         this.inactivityErrorHandler.reenableInactivityTimeout();
+        this.customBet365ErrorHandler.resolveIncident();
+        this.unknownErrorHandler.resolveIncident();
 
         this.handleOpenBets(openBets);
         this.handleSettledCashOutBets(settledCashedOutBets);
