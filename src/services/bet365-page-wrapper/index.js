@@ -89,7 +89,7 @@ class Bet365PageWrapper {
         } finally {
             setTimeout(() => {
                 this._realityCheckTick();
-            }, 1000 * 5);
+            }, 500);
         }
     }
 

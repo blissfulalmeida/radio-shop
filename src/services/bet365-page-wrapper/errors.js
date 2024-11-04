@@ -11,15 +11,25 @@ const BET365_PAGE_WRAPPER_ERROR = {
     FAILED_TO_GET_ALL_BETS_HTML_ON_THE_PAGE: 'FAILED_TO_GET_ALL_BETS_HTML_ON_THE_PAGE',
 };
 
-class CustomBet365HeplerError extends Error {
+class CustomBet365HelperError extends Error {
     constructor(message, code) {
         super(message);
 
         this.code = code;
+        this.screenshot = null;
+        this.screenshotError = null;
+    }
+
+    addScreenshot(screenshot) {
+        this.screenshot = screenshot;
+    }
+
+    addScreenshotGrabError(error) {
+        this.screenshotError = error;
     }
 }
 
 module.exports = {
     BET365_PAGE_WRAPPER_ERROR,
-    CustomBet365HeplerError,
+    CustomBet365HelperError,
 };

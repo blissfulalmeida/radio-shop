@@ -5,13 +5,12 @@ const moment = require('moment');
 const config = require('config');
 const { createLogger } = require('../../components/logger');
 const { BET_365_STATE } = require('../../constants');
-const { CustomBet365HeplerError } = require('../bet365-page-wrapper/errors');
-const { minutes } = require('../../components/util');
+const { CustomBet365HelperError } = require('../bet365-page-wrapper/errors');
+const { InactivityErrorHandler } = require('../error-handlers/inactivity-error-handler');
+const { CustomBet365ErrorHandler } = require('../error-handlers/custom-error-handler');
+const { UnknownErrorHandler } = require('../error-handlers/unknown-error-handler');
 
 const logger = createLogger(module);
-
-const SEND_INACTIVITY_NOTIFICATION_AFTER_MINUTES = 3;
-const SEND_CUSTOM_ERROR_NOTIFICATION_AFTER_MINUTES = 2;
 
 /**
  * TODO:
@@ -48,37 +47,19 @@ class DecisionEngine {
         this.customErrorNotificationTimeout = null;
 
         /**
-         * @type {CustomBet365HeplerError|null}
+         * @type {CustomBet365HelperError|null}
          */
         this.customError = null;
 
-        /**
-         * @type {NodeJS.Timeout|null}
-         * This property is used to schedule inactivity notifications
-         */
-        this.inactivityTimeout = null;
+        this.inactivityErrorHandler = new InactivityErrorHandler(telegramNotifier, proxyManager);
+        this.customBet365ErrorHandler = new CustomBet365ErrorHandler(telegramNotifier, proxyManager);
+        this.unknownErrorHandler = new UnknownErrorHandler(telegramNotifier);
 
         this.sendNextLongCycleNotificationAfter = null;
     }
 
     init() {
-        this.reenableInactivityTimeout();
-    }
-
-    clearInactivityTimeout() {
-        if (this.inactivityTimeout) {
-            clearTimeout(this.inactivityTimeout);
-            this.inactivityTimeout = null;
-        }
-    }
-
-    reenableInactivityTimeout() {
-        this.clearInactivityTimeout();
-
-        this.inactivityTimeout = setTimeout(() => {
-            this.fireInactivityNotification();
-            this.reenableInactivityTimeout();
-        }, minutes(SEND_INACTIVITY_NOTIFICATION_AFTER_MINUTES));
+        this.inactivityErrorHandler.reenableInactivityTimeout();
     }
 
     /**
@@ -89,8 +70,9 @@ class DecisionEngine {
         logger.info(`State changed from ${oldState} to ${newState}`);
 
         if (newState === BET_365_STATE.LOGGED_OUT) {
-            this.cancelScheduledCustomErrorNotification();
-            this.clearInactivityTimeout();
+            this.inactivityErrorHandler.clearInactivityTimeout();
+            this.customBet365ErrorHandler.resolveIncident();
+            this.unknownErrorHandler.resolveIncident();
 
             this.telegramNotifier.sendLoggedOutMessage();
         } else if (newState === BET_365_STATE.LOGGED_IN) {
@@ -104,8 +86,7 @@ class DecisionEngine {
      * @param {DurationMeasureToolReport} report
      * */
     handleBets(openBets, settledCashedOutBets, report) {
-        this.cancelScheduledCustomErrorNotification();
-        this.reenableInactivityTimeout();
+        this.inactivityErrorHandler.reenableInactivityTimeout();
 
         this.handleOpenBets(openBets);
         this.handleSettledCashOutBets(settledCashedOutBets);
@@ -244,68 +225,11 @@ class DecisionEngine {
      * @param {Error} error
      */
     handleError(error) {
-        if (error instanceof CustomBet365HeplerError) {
-            logger.error(`CustomBet365HeplerError: ${error.code}, ${error.message}`);
-
-            this.scheduleCustomErrorNotification(error);
+        if (error instanceof CustomBet365HelperError) {
+            this.customBet365ErrorHandler.handleError(error);
         } else {
-            this.telegramNotifier.sendUnknownErrorMessage(error.message);
+            this.unknownErrorHandler.handleError(error);
         }
-    }
-
-    scheduleCustomErrorNotification(error) {
-        if (this.customErrorNotificationTimeout) {
-            logger.info('Custom error notification already scheduled, skipping');
-
-            return;
-        }
-
-        logger.info(`Scheduling custom error notification. Will be sent in ${SEND_CUSTOM_ERROR_NOTIFICATION_AFTER_MINUTES} minutes if not cancelled`);
-
-        this.customError = error;
-        this.customErrorNotificationTimeout = setTimeout(() => {
-            this.fireCustomErrorNotification();
-        }, minutes(SEND_CUSTOM_ERROR_NOTIFICATION_AFTER_MINUTES));
-    }
-
-    cancelScheduledCustomErrorNotification() {
-        if (this.customErrorNotificationTimeout) {
-            clearTimeout(this.customErrorNotificationTimeout);
-            this.customErrorNotificationTimeout = null;
-            this.customError = null;
-        }
-    }
-
-    fireCustomErrorNotification() {
-        if (!this.customError || !this.customErrorNotificationTimeout) {
-            return;
-        }
-
-        this.telegramNotifier.sendCustomErrorMessage(`Occured ${SEND_CUSTOM_ERROR_NOTIFICATION_AFTER_MINUTES} minutes ago and has not been resolved yet\n${this.customError.code}: ${this.customError.message}`);
-        this.reloadProxy();
-
-        clearTimeout(this.customErrorNotificationTimeout);
-        this.customErrorNotificationTimeout = null;
-        this.customError = null;
-    }
-
-    fireInactivityNotification() {
-        this.telegramNotifier.sendInactivityMessage(SEND_INACTIVITY_NOTIFICATION_AFTER_MINUTES);
-        this.reloadProxy();
-    }
-
-    async reloadProxy() {
-        const proxyReloadResponse = await this.proxyManager.reloadProxy();
-
-        let messsage;
-
-        if (proxyReloadResponse.status === 'success') {
-            messsage = `Proxy reloaded successfully: ${JSON.stringify(proxyReloadResponse.res)}`;
-        } else {
-            messsage = `Failed to reload proxy: ${proxyReloadResponse.error.message}`;
-        }
-
-        this.telegramNotifier.sendMainChannelMessage(messsage);
     }
 }
 

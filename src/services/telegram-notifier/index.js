@@ -114,12 +114,22 @@ class TelegramNotifier {
     }
 
     /**
+     * @param {string} incidentId
      * @param {string} message
      */
-    async sendUnknownErrorMessage(message) {
-        logger.info(`TELEGRAM_NOTIFIER: Sending error notification: ${message}`);
+    async sendUnknownErrorMessage(incidentId, message) {
+        logger.info(`TELEGRAM_NOTIFIER: Sending unknown error notification: ${message}`);
 
-        this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\nUnknown error: ${message}`);
+        this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\n🚨Unknown error\n#${incidentId}\n${message}`);
+    }
+
+    /**
+     * @param {string} incidentId
+     */
+    async sendResolveUnknownErrorMessage(incidentId) {
+        logger.info(`TELEGRAM_NOTIFIER: Sending resolved unknown error notification for incident: ${incidentId}`);
+
+        this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\n✅️Unknown error resolved\n#${incidentId}`);
     }
 
     /**
