@@ -11,6 +11,7 @@ const { beautifyHTML } = require('../../components/util');
 const { OpenBetDataExtractor, SetteledBetDataExtractor } = require('./bet-data-extractor');
 const { BET_365_STATE } = require('../../constants');
 const { DurationMeasureTool } = require('../../components/duration-measure-tool');
+const { CustomBet365HelperError } = require('./errors');
 
 const logger = createLogger(module);
 
@@ -89,7 +90,7 @@ class Bet365PageWrapper {
         } finally {
             setTimeout(() => {
                 this._realityCheckTick();
-            }, 1000 * 5);
+            }, 500);
         }
     }
 
@@ -332,6 +333,40 @@ class Bet365PageWrapper {
             const report = durationMeasureTool.report();
 
             logger.info(`${this.cycleNumber}: Cycle error - ${error.message}, report: ${JSON.stringify(_.omit(report, ['actions']))}`);
+
+            if (error instanceof CustomBet365HelperError) {
+                let timeoutOccurred = false;
+
+                const captureScreenshot = async () => {
+                    try {
+                        const imageUint8Array = await this.page.screenshot({
+                            type: 'jpeg',
+                            quality: 50,
+                            omitBackground: true,
+                        });
+
+                        if (!timeoutOccurred) {
+                            error.addScreenshot(Buffer.from(imageUint8Array));
+                        }
+                    } catch (screenshotError) {
+                        if (!timeoutOccurred) {
+                            error.addScreenshotGrabError(screenshotError);
+                        }
+                    }
+                };
+
+                const timeout = new Promise((__, reject) => setTimeout(() => {
+                    timeoutOccurred = true;
+
+                    reject(new Error('Screenshot timeout exceeded'));
+                }, 500));
+
+                await Promise.race([captureScreenshot(), timeout]).catch((err) => {
+                    if (err.message === 'Screenshot timeout exceeded') {
+                        error.addScreenshotGrabError(err);
+                    }
+                });
+            }
 
             this.decisionEngine.handleError(error, durationMeasureTool.report());
         }

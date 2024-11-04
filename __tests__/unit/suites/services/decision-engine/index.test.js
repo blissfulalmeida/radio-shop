@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const moment = require('moment');
 const { DecisionEngine } = require('../../../../../src/services/decision-engine');
-const { CustomBet365HeplerError } = require('../../../../../src/services/bet365-page-wrapper/errors');
+const { CustomBet365HelperError } = require('../../../../../src/services/bet365-page-wrapper/errors');
 
 describe('DecisionEngine', () => {
     const storageMock = {
@@ -218,7 +218,7 @@ describe('DecisionEngine', () => {
 
         const decisionEngine = new DecisionEngine(storageMock, telegramNotifier);
 
-        const customError = new CustomBet365HeplerError('Test error', 'TEST_CODE');
+        const customError = new CustomBet365HelperError('Test error', 'TEST_CODE');
 
         decisionEngine.handleError(customError);
 

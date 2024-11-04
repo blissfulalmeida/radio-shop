@@ -1,6 +1,6 @@
 const { delay, repeatedAsyncOperationExecutor } = require('../../components/util');
 const { createLogger } = require('../../components/logger');
-const { CustomBet365HeplerError, BET365_PAGE_WRAPPER_ERROR } = require('./errors');
+const { CustomBet365HelperError, BET365_PAGE_WRAPPER_ERROR } = require('./errors');
 
 const logger = createLogger(module);
 
@@ -27,7 +27,7 @@ class Bet365MyBetsPageHelper {
                 await this.page.reload({ timeout: 30000, waitUntil: 'networkidle0' });
             }
         } catch (error) {
-            throw new CustomBet365HeplerError(
+            throw new CustomBet365HelperError(
                 `Failed to reload: ${error.message}`,
                 BET365_PAGE_WRAPPER_ERROR.FAILED_TO_RELOAD,
             );
@@ -43,7 +43,7 @@ class Bet365MyBetsPageHelper {
                 attempts: 50,
             });
         } catch (error) {
-            throw new CustomBet365HeplerError(
+            throw new CustomBet365HelperError(
                 'Failed to waitForPageHeaderToAppear',
                 BET365_PAGE_WRAPPER_ERROR.FAILED_TO_WAIT_FOR_PAGE_HEADER,
             );
@@ -53,7 +53,7 @@ class Bet365MyBetsPageHelper {
     /**
      * @returns {Promise<boolean>}
      */
-    async checkLoggedIn() {
+    async checkLoggedInWide() {
         try {
             const [
                 loggedInContainerSearchResult,
@@ -65,16 +65,63 @@ class Bet365MyBetsPageHelper {
                 ]),
                 predicate: ([liRes, loRes]) => (liRes.exists === true && loRes.exists === false) || (liRes.exists === false && loRes.exists === true),
                 timeout: 50,
-                attempts: 50,
+                attempts: 10,
             });
 
             return loggedInContainerSearchResult.exists === true && loggedOutContainerSearchResult.exists === false;
         } catch (error) {
-            throw new CustomBet365HeplerError(
+            throw new CustomBet365HelperError(
                 'Failed to checkLoggedIn',
                 BET365_PAGE_WRAPPER_ERROR.FAILED_TO_CHECK_LOGGED_IN,
             );
         }
+    }
+
+    /**
+     * @returns {Promise<boolean>}
+     */
+    async checkLoggedInNarrow() {
+        try {
+            const [
+                loggedInContainerSearchResult,
+                loggedOutContainerSearchResult,
+            ] = await repeatedAsyncOperationExecutor({
+                operation: async () => Promise.all([
+                    this.page.$('.hm-MainHeaderRHSLoggedInNarrow').then((el) => ({ exists: el !== null })).catch(() => ({ exists: false })),
+                    this.page.$('.hm-MainHeaderRHSLoggedOutNarrow_Login').then((el) => ({ exists: el !== null })).catch(() => ({ exists: false })),
+                ]),
+                predicate: ([liRes, loRes]) => (liRes.exists === true && loRes.exists === false) || (liRes.exists === false && loRes.exists === true),
+                timeout: 50,
+                attempts: 10,
+            });
+
+            return loggedInContainerSearchResult.exists === true && loggedOutContainerSearchResult.exists === false;
+        } catch (error) {
+            throw new CustomBet365HelperError(
+                'Failed to checkLoggedIn',
+                BET365_PAGE_WRAPPER_ERROR.FAILED_TO_CHECK_LOGGED_IN,
+            );
+        }
+    }
+
+    // If wide check fails, we will try to check the narrow version
+    async checkLoggedIn() {
+        const wideLoginResult = await this.checkLoggedInWide()
+            .then((res) => ({
+                status: 'ok',
+                result: res,
+                type: 'wide',
+            }))
+            .catch(() => ({
+                status: 'error',
+                type: 'wide',
+            }));
+
+        if (wideLoginResult.status === 'ok') {
+            return wideLoginResult.result;
+        }
+
+        return this.checkLoggedInNarrow();
     }
 
     /**
@@ -89,7 +136,7 @@ class Bet365MyBetsPageHelper {
                 attempts: 50,
             });
         } catch (error) {
-            throw new CustomBet365HeplerError(
+            throw new CustomBet365HelperError(
                 'Failed waiting for bets selection header to appear',
                 BET365_PAGE_WRAPPER_ERROR.FAILED_TO_WAIT_FOR_BETS_HEADER,
             );
@@ -135,7 +182,7 @@ class Bet365MyBetsPageHelper {
                 durationMeasureTool.addAction(`CLICK_ON_FILTER_BETS:::${betsFilter}:::MOUSE_CLICK`);
             }
         } catch (error) {
-            throw new CustomBet365HeplerError(
+            throw new CustomBet365HelperError(
                 `Failed to clickOnAllBets: ${error.message}`,
                 BET365_PAGE_WRAPPER_ERROR.FAILED_TO_CLICK_ON_ALL_BETS,
             );
@@ -154,7 +201,7 @@ class Bet365MyBetsPageHelper {
                 attempts: 50,
             });
         } catch (error) {
-            throw new CustomBet365HeplerError(
+            throw new CustomBet365HelperError(
                 'waitForBetsContainerToAppear failed',
                 BET365_PAGE_WRAPPER_ERROR.FAILED_TO_WAIT_FOR_BETS_CONTAINER,
             );
@@ -173,7 +220,7 @@ class Bet365MyBetsPageHelper {
                 attempts: 50,
             });
         } catch (error) {
-            throw new CustomBet365HeplerError(
+            throw new CustomBet365HelperError(
                 `waitForBetItemsContainerToAppear failed: ${error.message}`,
                 BET365_PAGE_WRAPPER_ERROR.FAILED_TO_WAIT_FOR_BET_ITEMS_CONTAINER,
             );
@@ -206,7 +253,7 @@ class Bet365MyBetsPageHelper {
                 }
             }
         } catch (error) {
-            throw new CustomBet365HeplerError(
+            throw new CustomBet365HelperError(
                 `Failed to expandCollapsedBets: ${error.message}`,
                 BET365_PAGE_WRAPPER_ERROR.FAILED_TO_EXPAND_COLLAPSED_BETS,
             );
@@ -219,7 +266,7 @@ class Bet365MyBetsPageHelper {
 
             return betsHtml;
         } catch (error) {
-            throw new CustomBet365HeplerError(
+            throw new CustomBet365HelperError(
                 `getAllBetsHtmlOnThePage failed: ${error.message}`,
                 BET365_PAGE_WRAPPER_ERROR.FAILED_TO_GET_ALL_BETS_HTML_ON_THE_PAGE,
             );
