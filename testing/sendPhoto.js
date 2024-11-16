@@ -32,6 +32,6 @@ const sendPhotoToTelegram = async (botToken, chatId, caption, photoPath) => {
 const botToken = config.get('telegram.botId');
 const chatId = config.get('telegram.chatId');
 const caption = 'Photo caption here';
-const photoPath = path.resolve(__dirname, 'image.jpeg');
+const photoPath = path.resolve(__dirname, 'screenshot.jpg');
 
 sendPhotoToTelegram(botToken, chatId, caption, photoPath);
