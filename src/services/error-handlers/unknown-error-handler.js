@@ -5,7 +5,7 @@ const { createLogger } = require('../../components/logger');
 
 const logger = createLogger(module);
 
-const CUSTOM_ERROR_NOTIFICATION_INTERVAL_SECONDS = config.get('customErrorNotificationIntervalSeconds');
+const UNKNOWN_ERROR_NOTIFICATION_INTERVAL_SECONDS = config.get('unknownErrorNotificationIntervalSeconds');
 
 class UnknownErrorHandler {
     /**
@@ -14,6 +14,9 @@ class UnknownErrorHandler {
     constructor(telegramNotifier) {
         this.telegramNotifier = telegramNotifier;
 
+        // This property is used to track the incident ID
+        // If it is not null, it means that an unknown error has occurred and has not been resolved yet
+        // Not resolved means that after the error occurred, not successful data collection has happened
         this.incidentId = null;
 
         this.sendNextUnknownErrorNotificationAfter = null;
@@ -35,7 +38,7 @@ class UnknownErrorHandler {
 
         this.telegramNotifier.sendUnknownErrorMessage(this.incidentId, error.message);
 
-        this.sendNextUnknownErrorNotificationAfter = moment().add(CUSTOM_ERROR_NOTIFICATION_INTERVAL_SECONDS, 'seconds');
+        this.sendNextUnknownErrorNotificationAfter = moment().add(UNKNOWN_ERROR_NOTIFICATION_INTERVAL_SECONDS, 'seconds');
     }
 
     resolveIncident() {

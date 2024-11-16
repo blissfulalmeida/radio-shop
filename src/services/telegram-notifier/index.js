@@ -1,5 +1,6 @@
 const config = require('config');
 const axios = require('axios').default;
+const FormData = require('form-data');
 const { createLogger } = require('../../components/logger');
 
 const logger = createLogger(module);
@@ -58,13 +59,28 @@ class TelegramNotifier {
     /**
      * @param {string} message
      */
-    async _sendErrorChannelTelegramMessage(message) {
-        axios({
-            method: 'get',
-            url: `https://api.telegram.org/bot${this.telegramBotId}/sendMessage?chat_id=${this.telegramErrorChatId}&text=${encodeURIComponent(message)}`,
-        })
-            .then(() => { logger.info('TELEGRAM_NOTIFIER: Error message sent'); })
-            .catch((error) => { logger.error(`TELEGRAM_NOTIFIER:: Failed to send error message - ${message}. Error - ${error.message}`); });
+    async _sendErrorChannelTelegramMessage(message, imageBuffer) {
+        if (imageBuffer) {
+            const form = new FormData();
+            form.append('chat_id', this.telegramErrorChatId);
+            form.append('caption', message);
+            form.append('photo', imageBuffer, { filename: 'error.jpg' });
+
+            await axios.post(
+                `https://api.telegram.org//bot${this.telegramBotId}/sendPhoto`,
+                form,
+                {
+                    headers: form.getHeaders(),
+                },
+            );
+        } else {
+            axios({
+                method: 'get',
+                url: `https://api.telegram.org/bot${this.telegramBotId}/sendMessage?chat_id=${this.telegramErrorChatId}&text=${encodeURIComponent(message)}`,
+            })
+                .then(() => { logger.info('TELEGRAM_NOTIFIER: Error message sent'); })
+                .catch((error) => { logger.error(`TELEGRAM_NOTIFIER:: Failed to send error message - ${message}. Error - ${error.message}`); });
+        }
     }
 
     async sendAppLaunchedMessage() {
@@ -133,12 +149,21 @@ class TelegramNotifier {
     }
 
     /**
-     * @param {string} message
+     * @param {import('../bet365-page-wrapper/errors').CustomBet365HelperError} error
      */
-    async sendCustomErrorMessage(message) {
-        logger.info(`TELEGRAM_NOTIFIER: Sending custom error notification: ${message}`);
+    async sendCustomErrorMessage(incidentId, error) {
+        logger.info(`TELEGRAM_NOTIFIER: Sending custom error notification: ${error.message}`);
 
-        this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\nCustom error: ${message}`);
+        this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\n🚨Custom error\n#${incidentId}\n${error.message}`, error.screenshot);
+    }
+
+    /**
+     * @param {string} incidentId
+     */
+    async sendResolveCustomErrorMessage(incidentId) {
+        logger.info(`TELEGRAM_NOTIFIER: Sending resolved custom error notification for incident: ${incidentId}`);
+
+        this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\n✅️Custom error resolved\n#${incidentId}`);
     }
 
     async sendInactivityMessage(minutes) {

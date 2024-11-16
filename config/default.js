@@ -17,5 +17,6 @@ module.exports = {
         shouldBeInitiated: true,
     },
     maxCycleDuration: 1000 * 10,
+    unknownErrorNotificationIntervalSeconds: 60 * 5,
     customErrorNotificationIntervalSeconds: 60 * 2,
 };

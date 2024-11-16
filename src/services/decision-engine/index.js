@@ -86,6 +86,7 @@ class DecisionEngine {
      * @param {DurationMeasureToolReport} report
      * */
     handleBets(openBets, settledCashedOutBets, report) {
+        // If the data arrives, all error handlers should be resolved
         this.inactivityErrorHandler.reenableInactivityTimeout();
         this.customBet365ErrorHandler.resolveIncident();
         this.unknownErrorHandler.resolveIncident();
