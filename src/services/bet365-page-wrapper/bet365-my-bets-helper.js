@@ -53,7 +53,7 @@ class Bet365MyBetsPageHelper {
     /**
      * @returns {Promise<boolean>}
      */
-    async checkLoggedIn() {
+    async checkLoggedInWide() {
         try {
             const [
                 loggedInContainerSearchResult,
@@ -65,7 +65,7 @@ class Bet365MyBetsPageHelper {
                 ]),
                 predicate: ([liRes, loRes]) => (liRes.exists === true && loRes.exists === false) || (liRes.exists === false && loRes.exists === true),
                 timeout: 50,
-                attempts: 50,
+                attempts: 10,
             });
 
             return loggedInContainerSearchResult.exists === true && loggedOutContainerSearchResult.exists === false;
@@ -75,6 +75,53 @@ class Bet365MyBetsPageHelper {
                 BET365_PAGE_WRAPPER_ERROR.FAILED_TO_CHECK_LOGGED_IN,
             );
         }
+    }
+
+    /**
+     * @returns {Promise<boolean>}
+     */
+    async checkLoggedInNarrow() {
+        try {
+            const [
+                loggedInContainerSearchResult,
+                loggedOutContainerSearchResult,
+            ] = await repeatedAsyncOperationExecutor({
+                operation: async () => Promise.all([
+                    this.page.$('.hm-MainHeaderRHSLoggedInNarrow').then((el) => ({ exists: el !== null })).catch(() => ({ exists: false })),
+                    this.page.$('.hm-MainHeaderRHSLoggedOutNarrow_Login').then((el) => ({ exists: el !== null })).catch(() => ({ exists: false })),
+                ]),
+                predicate: ([liRes, loRes]) => (liRes.exists === true && loRes.exists === false) || (liRes.exists === false && loRes.exists === true),
+                timeout: 50,
+                attempts: 10,
+            });
+
+            return loggedInContainerSearchResult.exists === true && loggedOutContainerSearchResult.exists === false;
+        } catch (error) {
+            throw new CustomBet365HelperError(
+                'Failed to checkLoggedIn',
+                BET365_PAGE_WRAPPER_ERROR.FAILED_TO_CHECK_LOGGED_IN,
+            );
+        }
+    }
+
+    // If wide check fails, we will try to check the narrow version
+    async checkLoggedIn() {
+        const wideLoginResult = await this.checkLoggedInWide()
+            .then((res) => ({
+                status: 'ok',
+                result: res,
+                type: 'wide',
+            }))
+            .catch(() => ({
+                status: 'error',
+                type: 'wide',
+            }));
+
+        if (wideLoginResult.status === 'ok') {
+            return wideLoginResult.result;
+        }
+
+        return this.checkLoggedInNarrow();
     }
 
     /**
