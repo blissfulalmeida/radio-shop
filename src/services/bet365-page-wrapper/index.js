@@ -118,7 +118,7 @@ class Bet365PageWrapper {
         } finally {
             setTimeout(() => {
                 this._leanDataCrawlingTick();
-            }, 500);
+            }, 100);
         }
     }
 
@@ -234,11 +234,11 @@ class Bet365PageWrapper {
 
             durationMeasureTool.addAction('PAGE_RELOADED');
 
-            await bet365MyBetsPageHelper.waitForPageHeaderToAppear();
+            await bet365MyBetsPageHelper.waitForPageHeaderToAppear(reloadPage);
 
             durationMeasureTool.addAction('PAGE_HEADER_APPEARED');
 
-            const loggedIn = await bet365MyBetsPageHelper.checkLoggedIn();
+            const loggedIn = await bet365MyBetsPageHelper.checkLoggedIn(reloadPage);
 
             this._setState(loggedIn ? BET_365_STATE.LOGGED_IN : BET_365_STATE.LOGGED_OUT);
 
@@ -269,7 +269,7 @@ class Bet365PageWrapper {
 
             durationMeasureTool.addAction('BET_ITEMS_CONTAINER_APPEARED');
 
-            await bet365MyBetsPageHelper.expandCollapsedBets();
+            await bet365MyBetsPageHelper.expandCollapsedBets(durationMeasureTool);
 
             durationMeasureTool.addAction('EXPANDED_COLLAPSED');
 

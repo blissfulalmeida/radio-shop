@@ -34,13 +34,13 @@ class Bet365MyBetsPageHelper {
         }
     }
 
-    async waitForPageHeaderToAppear() {
+    async waitForPageHeaderToAppear(pageWasJustReloaded = false) {
         try {
             await repeatedAsyncOperationExecutor({
                 operation: () => this.page.$('div.wc-WebConsoleModule_Header > div.hm-HeaderModule'),
                 predicate: (el) => el,
                 timeout: 50,
-                attempts: 50,
+                attempts: pageWasJustReloaded ? 100 : 50,
             });
         } catch (error) {
             throw new CustomBet365HelperError(
@@ -65,7 +65,7 @@ class Bet365MyBetsPageHelper {
                 ]),
                 predicate: ([liRes, loRes]) => (liRes.exists === true && loRes.exists === false) || (liRes.exists === false && loRes.exists === true),
                 timeout: 50,
-                attempts: 10,
+                attempts: 1,
             });
 
             return loggedInContainerSearchResult.exists === true && loggedOutContainerSearchResult.exists === false;
@@ -92,7 +92,7 @@ class Bet365MyBetsPageHelper {
                 ]),
                 predicate: ([liRes, loRes]) => (liRes.exists === true && loRes.exists === false) || (liRes.exists === false && loRes.exists === true),
                 timeout: 50,
-                attempts: 10,
+                attempts: 1,
             });
 
             return loggedInContainerSearchResult.exists === true && loggedOutContainerSearchResult.exists === false;
@@ -104,24 +104,46 @@ class Bet365MyBetsPageHelper {
         }
     }
 
-    // If wide check fails, we will try to check the narrow version
-    async checkLoggedIn() {
-        const wideLoginResult = await this.checkLoggedInWide()
-            .then((res) => ({
-                status: 'ok',
-                result: res,
-                type: 'wide',
-            }))
-            .catch(() => ({
-                status: 'error',
-                type: 'wide',
-            }));
+    /**
+     * We check for both possible states of the page - wide and narrow
+     * In parallel, we check for both states and if any has a definitive result, we return it
+     */
+    async checkLoggedIn(pageWasJustReloaded = false) {
+        const attempts = pageWasJustReloaded ? 50 : 20;
 
-        if (wideLoginResult.status === 'ok') {
-            return wideLoginResult.result;
+        for (let i = 0; i < attempts; i += 1) {
+            const [wideResult, narrowResult] = await Promise.all([
+                this.checkLoggedInWide()
+                    .then((res) => ({
+                        status: 'ok',
+                        result: res,
+                    }))
+                    .catch(() => ({
+                        status: 'error',
+                    })),
+                this.checkLoggedInNarrow()
+                    .then((res) => ({
+                        status: 'ok',
+                        result: res,
+                    }))
+                    .catch(() => ({
+                        status: 'error',
+                    })),
+            ]);
+
+            const withDataResoledCheck = [wideResult, narrowResult].filter((res) => res.status === 'ok');
+
+            if (withDataResoledCheck.length !== 0) {
+                return withDataResoledCheck[0].result;
+            }
+
+            await delay(50);
         }
 
-        return this.checkLoggedInNarrow();
+        throw new CustomBet365HelperError(
+            'Failed to checkLoggedIn',
+            BET365_PAGE_WRAPPER_ERROR.FAILED_TO_CHECK_LOGGED_IN,
+        );
     }
 
     /**
@@ -230,26 +252,38 @@ class Bet365MyBetsPageHelper {
     /**
      * @returns {Promise<void>}
      */
-    async expandCollapsedBets() {
+    async expandCollapsedBets(durationMeasureTool = null) {
         try {
             const betItems = await this.page.$$(
                 'div.myb-BetItemsContainer_Container > div.myb-OpenBetItem, div.myb-BetItemsContainer_Container > div.myb-SettledBetItem',
             );
 
+            if (durationMeasureTool) {
+                durationMeasureTool.addAction(`EXPANDED_COLLAPSED:::BET_ITEMS_FOUND:::${betItems.length}`);
+            }
+
             // eslint-disable-next-line no-restricted-syntax
-            for (const item of betItems) {
+            for (const [index, item] of betItems.entries()) {
                 const classNames = await item.evaluate((el) => el.className);
 
                 if (classNames.includes('Collapsed')) {
                     const box = await item.boundingBox();
 
-                    if (box) {
-                        await this.page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 10 });
+                    if (durationMeasureTool) {
+                        durationMeasureTool.addAction(`EXPANDED_COLLAPSED:::BET_${index}:::BOUNDING_BOX_FOUND`);
                     }
 
-                    await delay(Math.random() * 500 + 100);
+                    if (box) {
+                        await this.page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 1 });
+                    }
+
+                    await delay(Math.random() * 100 + 100);
 
                     await item.click();
+
+                    if (durationMeasureTool) {
+                        durationMeasureTool.addAction(`EXPANDED_COLLAPSED:::BET_${index}:::BOUNDING_BOX_CLICKED`);
+                    }
                 }
             }
         } catch (error) {
