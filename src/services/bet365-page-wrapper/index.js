@@ -343,7 +343,7 @@ class Bet365PageWrapper {
                     try {
                         const imageUint8Array = await this.page.screenshot({
                             type: 'jpeg',
-                            quality: 50,
+                            quality: 95,
                             omitBackground: true,
                         });
 
