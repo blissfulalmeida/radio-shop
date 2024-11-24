@@ -5,11 +5,9 @@ const SEND_INACTIVITY_NOTIFICATION_AFTER_MINUTES = 3;
 class InactivityErrorHandler {
     /**
      * @param {import('../telegram-notifier').TelegramNotifier} telegramNotifier
-     * @param {import('../proxy-manager').ProxyManager} proxyManager
      */
-    constructor(telegramNotifier, proxyManager) {
+    constructor(telegramNotifier) {
         this.telegramNotifier = telegramNotifier;
-        this.proxyManager = proxyManager;
     }
 
     init() {
@@ -34,21 +32,6 @@ class InactivityErrorHandler {
 
     fireInactivityNotification() {
         this.telegramNotifier.sendInactivityMessage(SEND_INACTIVITY_NOTIFICATION_AFTER_MINUTES);
-        this.reloadProxy();
-    }
-
-    async reloadProxy() {
-        const proxyReloadResponse = await this.proxyManager.reloadProxy();
-
-        let message;
-
-        if (proxyReloadResponse.status === 'success') {
-            message = `Proxy reloaded successfully: ${JSON.stringify(proxyReloadResponse.res)}`;
-        } else {
-            message = `Failed to reload proxy: ${proxyReloadResponse.error.message}`;
-        }
-
-        this.telegramNotifier.sendMainChannelMessage(message);
     }
 }
 

@@ -21,11 +21,13 @@ class DecisionEngine {
      * @param {import('../storage').SimpleFileBasedStorage} storage
      * @param {import('../telegram-notifier').TelegramNotifier} telegramNotifier
      * @param {import('../proxy-manager').ProxyManager} proxyManager
+     * @param {import('../event-bus').EventBus} eventBus
      */
-    constructor(storage, telegramNotifier, proxyManager) {
+    constructor(storage, telegramNotifier, proxyManager, eventBus) {
         this.storage = storage;
         this.telegramNotifier = telegramNotifier;
         this.proxyManager = proxyManager;
+        this.eventBus = eventBus;
 
         /**
          * @type {string|null}
@@ -37,22 +39,8 @@ class DecisionEngine {
          */
         this.newState = null;
 
-        /**
-         * @type {NodeJS.Timeout|null}
-         * This property is used to schedule custom error notifications
-         * Whenever a custom error occurs, we schedule a notification to be sent in 2 minutes
-         * If another error occurs before the 2 minutes have passed, we ignore that error and wait for the scheduled notification
-         * If successful operation occurs, we cancel the scheduled notification
-         */
-        this.customErrorNotificationTimeout = null;
-
-        /**
-         * @type {CustomBet365HelperError|null}
-         */
-        this.customError = null;
-
-        this.inactivityErrorHandler = new InactivityErrorHandler(telegramNotifier, proxyManager);
-        this.customBet365ErrorHandler = new CustomBet365ErrorHandler(telegramNotifier, proxyManager);
+        this.inactivityErrorHandler = new InactivityErrorHandler(telegramNotifier);
+        this.customBet365ErrorHandler = new CustomBet365ErrorHandler(telegramNotifier, proxyManager, eventBus);
         this.unknownErrorHandler = new UnknownErrorHandler(telegramNotifier);
 
         this.sendNextLongCycleNotificationAfter = null;
@@ -71,8 +59,8 @@ class DecisionEngine {
 
         if (newState === BET_365_STATE.LOGGED_OUT) {
             this.inactivityErrorHandler.clearInactivityTimeout();
-            this.customBet365ErrorHandler.resolveIncident();
-            this.unknownErrorHandler.resolveIncident();
+            this.customBet365ErrorHandler.resolveIncident(BET_365_STATE.LOGGED_OUT);
+            this.unknownErrorHandler.resolveIncident(BET_365_STATE.LOGGED_OUT);
 
             this.telegramNotifier.sendLoggedOutMessage();
         } else if (newState === BET_365_STATE.LOGGED_IN) {

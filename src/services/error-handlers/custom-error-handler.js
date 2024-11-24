@@ -2,6 +2,7 @@ const config = require('config');
 const moment = require('moment');
 const { v4 } = require('uuid');
 const { createLogger } = require('../../components/logger');
+const { CustomErrorRepairer } = require('./custom-error-repairer');
 
 const logger = createLogger(module);
 
@@ -11,10 +12,12 @@ class CustomBet365ErrorHandler {
     /**
      * @param {import('../telegram-notifier').TelegramNotifier} telegramNotifier
      * @param {import('../proxy-manager').ProxyManager} proxyManager
+     * @param {import('../event-bus').EventBus} eventBus
      */
-    constructor(telegramNotifier, proxyManager) {
+    constructor(telegramNotifier, proxyManager, eventBus) {
         this.telegramNotifier = telegramNotifier;
         this.proxyManager = proxyManager;
+        this.eventBus = eventBus;
 
         // This property is used to track the incident ID
         // If it is not null, it means that an unknown error has occurred and has not been resolved yet
@@ -22,6 +25,8 @@ class CustomBet365ErrorHandler {
         this.incidentId = null;
 
         this.sendNextCustomErrorNotificationAfter = null;
+
+        this.errorRepairer = null;
     }
 
     /**
@@ -29,7 +34,11 @@ class CustomBet365ErrorHandler {
      */
     handleError(error) {
         if (!this.incidentId) {
+            // This starts a new incident
             this.incidentId = v4().replace(/-/g, '_');
+
+            this.errorRepairer = new CustomErrorRepairer(this.telegramNotifier, this.proxyManager, this.eventBus);
+            this.errorRepairer.startRepairing();
         }
 
         if (this.sendNextCustomErrorNotificationAfter && !moment().isAfter(this.sendNextCustomErrorNotificationAfter)) {
@@ -43,27 +52,15 @@ class CustomBet365ErrorHandler {
         this.sendNextCustomErrorNotificationAfter = moment().add(CUSTOM_ERROR_NOTIFICATION_INTERVAL_SECONDS, 'seconds');
     }
 
-    resolveIncident() {
+    resolveIncident(reason = null) {
         if (this.incidentId) {
-            this.telegramNotifier.sendResolveCustomErrorMessage(this.incidentId);
+            this.telegramNotifier.sendResolveCustomErrorMessage(this.incidentId, reason);
 
             this.incidentId = null;
+            this.errorRepairer.terminate();
+            this.errorRepairer = null;
             this.sendNextCustomErrorNotificationAfter = null;
         }
-    }
-
-    async reloadProxy() {
-        const proxyReloadResponse = await this.proxyManager.reloadProxy();
-
-        let message;
-
-        if (proxyReloadResponse.status === 'success') {
-            message = `Proxy reloaded successfully: ${JSON.stringify(proxyReloadResponse.res)}`;
-        } else {
-            message = `Failed to reload proxy: ${proxyReloadResponse.error.message}`;
-        }
-
-        this.telegramNotifier.sendMainChannelMessage(message);
     }
 }
 

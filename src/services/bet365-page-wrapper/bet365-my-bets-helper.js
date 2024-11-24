@@ -20,11 +20,11 @@ class Bet365MyBetsPageHelper {
             if (currentUrl !== this.baseUrl) {
                 logger.info(`Current URL is different. Navigating to ${this.baseUrl}`);
 
-                await this.page.goto(this.baseUrl, { timeout: 30000, waitUntil: 'networkidle2' });
+                await this.page.goto(this.baseUrl, { timeout: 15000, waitUntil: 'load' });
             } else {
                 logger.info('Current URL is the same. Reloading the page.');
 
-                await this.page.reload({ timeout: 30000, waitUntil: 'networkidle0' });
+                await this.page.reload({ timeout: 15000, waitUntil: 'load' });
             }
         } catch (error) {
             throw new CustomBet365HelperError(
