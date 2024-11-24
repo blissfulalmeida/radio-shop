@@ -12,6 +12,7 @@ const { OpenBetDataExtractor, SetteledBetDataExtractor } = require('./bet-data-e
 const { BET_365_STATE } = require('../../constants');
 const { DurationMeasureTool } = require('../../components/duration-measure-tool');
 const { CustomBet365HelperError } = require('./errors');
+const { EVENT } = require('../event-bus');
 
 const logger = createLogger(module);
 
@@ -52,28 +53,15 @@ class Bet365PageWrapper {
                 defaultViewport: null,
             });
 
-            this.page = await this.browser.newPage();
-
-            const pages = await this.browser.pages();
-
-            // eslint-disable-next-line no-restricted-syntax
-            for (const p of pages) {
-                if (p !== this.page) {
-                    await p.close();
-                }
-            }
-
-            await this.page.goto(this.bet365MyBetsPage, { timeout: 15000, waitUntil: 'load' });
-
-            const client = await this.page.target().createCDPSession();
-            await client.send('DOM.enable');
-            await client.send('Overlay.enable');
+            await this._recreateMainPage();
 
             this._setState(BET_365_STATE.READY);
 
             this._startRealityCheckSolvingLoop();
-            this._startDataCrawlingLoop();
-            this._startLeanDataCrawlingLoop();
+            this._startPageReloadCrawlingLoop();
+            this._starExistingPageCrawlingLoop();
+
+            this._subscribeToEvents();
         } catch (error) {
             throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed to init: ${error.message}`);
         }
@@ -96,7 +84,7 @@ class Bet365PageWrapper {
         }
     }
 
-    _startDataCrawlingLoop() {
+    _startPageReloadCrawlingLoop() {
         this._dataCrawlingTick();
     }
 
@@ -106,11 +94,11 @@ class Bet365PageWrapper {
         } finally {
             setTimeout(() => {
                 this._dataCrawlingTick();
-            }, 1000 * 60 * 5);
+            }, 1000 * 60 * 10);
         }
     }
 
-    _startLeanDataCrawlingLoop() {
+    _starExistingPageCrawlingLoop() {
         this._leanDataCrawlingTick();
     }
 
@@ -122,6 +110,18 @@ class Bet365PageWrapper {
                 this._leanDataCrawlingTick();
             }, 100);
         }
+    }
+
+    _subscribeToEvents() {
+        // When a page reload is requested - we need to start the data crawling process with page reload
+        this.eventBus.on(EVENT.PAGE_RELOAD, async () => {
+            await this._executeAsyncJob(() => this._executePageAction());
+        });
+
+        // When a full page reload is requested - we need to recreate the main page
+        this.eventBus.on(EVENT.FULL_PAGE_RELOAD, async () => {
+            await this._executeAsyncJob(() => this._recreateMainPage().catch(_.noop));
+        });
     }
 
     _executeAsyncJob(asyncJob) {
@@ -371,6 +371,44 @@ class Bet365PageWrapper {
             }
 
             this.decisionEngine.handleError(error, durationMeasureTool.report());
+        }
+    }
+
+    async _recreateMainPage() {
+        try {
+            // Close the current page if it exists
+            if (this.page) {
+                this.page = null;
+            }
+
+            const newPageToBeCreated = await this.browser.newPage();
+
+            const pages = await this.browser.pages();
+
+            // eslint-disable-next-line no-restricted-syntax
+            for (const p of pages) {
+                if (p !== newPageToBeCreated) {
+                    await p.close().catch((error) => {
+                        logger.error(`BET365_PAGE_WRAPPER_ERROR:: Failed to close page: ${error.message}`);
+                    });
+                }
+            }
+
+            await newPageToBeCreated.goto(this.bet365MyBetsPage, { timeout: 30000, waitUntil: 'load' });
+
+            const client = await newPageToBeCreated.target().createCDPSession();
+            await client.send('DOM.enable');
+            await client.send('Overlay.enable');
+
+            logger.info('Main page recreated successfully');
+
+            this.page = newPageToBeCreated;
+        } catch (error) {
+            logger.error(`BET365_PAGE_WRAPPER_ERROR:: Failed to recreate main page: ${error.message}`);
+
+            this.decisionEngine.handleError(new Error(`Failed to recreate main page: ${error.message}`));
+
+            throw error;
         }
     }
 }

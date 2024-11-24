@@ -31,7 +31,7 @@ class UnknownErrorHandler {
         }
 
         if (this.sendNextUnknownErrorNotificationAfter && !moment().isAfter(this.sendNextUnknownErrorNotificationAfter)) {
-            logger.info('Custom error notification skipped');
+            logger.info('Unknown error notification skipped');
 
             return;
         }
