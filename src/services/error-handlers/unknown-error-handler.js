@@ -41,9 +41,9 @@ class UnknownErrorHandler {
         this.sendNextUnknownErrorNotificationAfter = moment().add(UNKNOWN_ERROR_NOTIFICATION_INTERVAL_SECONDS, 'seconds');
     }
 
-    resolveIncident() {
+    resolveIncident(reason = null) {
         if (this.incidentId) {
-            this.telegramNotifier.sendResolveUnknownErrorMessage(this.incidentId);
+            this.telegramNotifier.sendResolveUnknownErrorMessage(this.incidentId, reason);
 
             this.incidentId = null;
             this.sendNextUnknownErrorNotificationAfter = null;

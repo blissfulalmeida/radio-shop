@@ -43,9 +43,9 @@ class CustomBet365ErrorHandler {
         this.sendNextCustomErrorNotificationAfter = moment().add(CUSTOM_ERROR_NOTIFICATION_INTERVAL_SECONDS, 'seconds');
     }
 
-    resolveIncident() {
+    resolveIncident(reason = null) {
         if (this.incidentId) {
-            this.telegramNotifier.sendResolveCustomErrorMessage(this.incidentId);
+            this.telegramNotifier.sendResolveCustomErrorMessage(this.incidentId, reason);
 
             this.incidentId = null;
             this.sendNextCustomErrorNotificationAfter = null;

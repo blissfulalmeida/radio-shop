@@ -142,11 +142,12 @@ class TelegramNotifier {
 
     /**
      * @param {string} incidentId
+     * @param {string} reason
      */
-    async sendResolveUnknownErrorMessage(incidentId) {
-        logger.info(`TELEGRAM_NOTIFIER: Sending resolved unknown error notification for incident: ${incidentId}`);
+    async sendResolveUnknownErrorMessage(incidentId, reason = null) {
+        logger.info(`TELEGRAM_NOTIFIER: Sending resolved unknown error notification for incident: ${incidentId}${reason ? `, REASON: ${reason}` : ''}`);
 
-        this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\n✅️Unknown error resolved\n#${incidentId}`);
+        this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\n✅️Unknown error resolved\n${reason ? `REASON: ${reason}\n` : ''}#${incidentId}`);
     }
 
     /**
@@ -160,11 +161,12 @@ class TelegramNotifier {
 
     /**
      * @param {string} incidentId
+     * @param {string} reason
      */
-    async sendResolveCustomErrorMessage(incidentId) {
-        logger.info(`TELEGRAM_NOTIFIER: Sending resolved custom error notification for incident: ${incidentId}`);
+    async sendResolveCustomErrorMessage(incidentId, reason = null) {
+        logger.info(`TELEGRAM_NOTIFIER: Sending resolved custom error notification for incident: ${incidentId}${reason ? `, REASON: ${reason}` : ''}`);
 
-        this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\n✅️Custom error resolved\n#${incidentId}`);
+        this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\n✅️Custom error resolved\n${reason ? `REASON: ${reason}\n` : ''}#${incidentId}`);
     }
 
     async sendInactivityMessage(minutes) {
