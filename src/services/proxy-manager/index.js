@@ -6,16 +6,16 @@ const logger = createLogger(module);
 
 class ProxyManager {
     async reloadProxy() {
-        const prixyReloadResponse = await axios({
+        const proxyReloadResponse = await axios({
             method: 'get',
             url: config.get('proxy.reloadUrl'),
         })
             .then((response) => ({ status: 'success', res: response.data }))
             .catch((error) => ({ status: 'error', error: error.message }));
 
-        logger.info(`PROXY_MANAGER: Proxy reloaded: ${JSON.stringify(prixyReloadResponse)}`);
+        logger.info(`PROXY_MANAGER: Proxy reloaded: ${JSON.stringify(proxyReloadResponse)}`);
 
-        return prixyReloadResponse;
+        return proxyReloadResponse;
     }
 }
 
