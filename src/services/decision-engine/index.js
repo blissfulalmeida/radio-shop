@@ -51,7 +51,7 @@ class DecisionEngine {
          */
         this.customError = null;
 
-        this.inactivityErrorHandler = new InactivityErrorHandler(telegramNotifier, proxyManager);
+        this.inactivityErrorHandler = new InactivityErrorHandler(telegramNotifier);
         this.customBet365ErrorHandler = new CustomBet365ErrorHandler(telegramNotifier, proxyManager);
         this.unknownErrorHandler = new UnknownErrorHandler(telegramNotifier);
 
