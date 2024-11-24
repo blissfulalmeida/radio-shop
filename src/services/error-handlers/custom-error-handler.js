@@ -11,10 +11,12 @@ class CustomBet365ErrorHandler {
     /**
      * @param {import('../telegram-notifier').TelegramNotifier} telegramNotifier
      * @param {import('../proxy-manager').ProxyManager} proxyManager
+     * @param {import('../event-bus').EventBus} eventBus
      */
-    constructor(telegramNotifier, proxyManager) {
+    constructor(telegramNotifier, proxyManager, eventBus) {
         this.telegramNotifier = telegramNotifier;
         this.proxyManager = proxyManager;
+        this.eventBus = eventBus;
 
         // This property is used to track the incident ID
         // If it is not null, it means that an unknown error has occurred and has not been resolved yet

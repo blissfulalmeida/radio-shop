@@ -10,6 +10,7 @@ const { SimpleFileBasedStorage } = require('./services/storage');
 const { DecisionEngine } = require('./services/decision-engine');
 const { StorageCleaner } = require('./services/storage-cleaner');
 const { ProxyManager } = require('./services/proxy-manager');
+const { EventBus } = require('./services/event-bus');
 
 const logger = createLogger(module);
 
@@ -38,10 +39,11 @@ const validateConfig = () => {
         const storageDirectory = path.resolve(__dirname, '..', 'db');
         fs.mkdirSync(storageDirectory, { recursive: true });
 
+        const eventBus = new EventBus();
         const storage = new SimpleFileBasedStorage(path.resolve(storageDirectory, `${config.get('bet365.account')}.json`));
         const telegramNotifier = new TelegramNotifier();
         const proxyManager = new ProxyManager();
-        const decisionEngine = new DecisionEngine(storage, telegramNotifier, proxyManager);
+        const decisionEngine = new DecisionEngine(storage, telegramNotifier, proxyManager, eventBus);
         const octoBrowserApi = new OctoBrowserApi();
         const storageCleaner = new StorageCleaner(storage, config.get('storage.openBets.deleteAfterSeconds'));
 
@@ -61,7 +63,7 @@ const validateConfig = () => {
 
         logger.info(`Connected to OctoBrowser with profile: ${JSON.stringify(octoBrowserProfile)}`);
 
-        const bet365PageWrapper = new Bet365PageWrapper(octoBrowserProfile, decisionEngine);
+        const bet365PageWrapper = new Bet365PageWrapper(octoBrowserProfile, decisionEngine, eventBus);
 
         await bet365PageWrapper.init();
 

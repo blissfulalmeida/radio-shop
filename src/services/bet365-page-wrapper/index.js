@@ -21,10 +21,12 @@ class Bet365PageWrapper {
     /**
      * @param {Profile} profile
      * @param {import('../decision-engine').DecisionEngine} decisionEngine
+     * @param {import('../event-bus').EventBus} eventBus
      */
-    constructor(profile, decisionEngine) {
+    constructor(profile, decisionEngine, eventBus) {
         this.profile = profile;
         this.decisionEngine = decisionEngine;
+        this.eventBus = eventBus;
 
         this.state = BET_365_STATE.IDLE;
         this.bet365MyBetsPage = config.get('bet365.myBetsPage');
@@ -61,7 +63,7 @@ class Bet365PageWrapper {
                 }
             }
 
-            await this.page.goto(this.bet365MyBetsPage, { timeout: 30000, waitUntil: 'domcontentloaded' });
+            await this.page.goto(this.bet365MyBetsPage, { timeout: 15000, waitUntil: 'load' });
 
             const client = await this.page.target().createCDPSession();
             await client.send('DOM.enable');

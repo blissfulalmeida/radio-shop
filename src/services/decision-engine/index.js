@@ -21,11 +21,13 @@ class DecisionEngine {
      * @param {import('../storage').SimpleFileBasedStorage} storage
      * @param {import('../telegram-notifier').TelegramNotifier} telegramNotifier
      * @param {import('../proxy-manager').ProxyManager} proxyManager
+     * @param {import('../event-bus').EventBus} eventBus
      */
-    constructor(storage, telegramNotifier, proxyManager) {
+    constructor(storage, telegramNotifier, proxyManager, eventBus) {
         this.storage = storage;
         this.telegramNotifier = telegramNotifier;
         this.proxyManager = proxyManager;
+        this.eventBus = eventBus;
 
         /**
          * @type {string|null}
@@ -38,7 +40,7 @@ class DecisionEngine {
         this.newState = null;
 
         this.inactivityErrorHandler = new InactivityErrorHandler(telegramNotifier);
-        this.customBet365ErrorHandler = new CustomBet365ErrorHandler(telegramNotifier, proxyManager);
+        this.customBet365ErrorHandler = new CustomBet365ErrorHandler(telegramNotifier, proxyManager, eventBus);
         this.unknownErrorHandler = new UnknownErrorHandler(telegramNotifier);
 
         this.sendNextLongCycleNotificationAfter = null;
