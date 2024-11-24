@@ -99,9 +99,12 @@ class DecisionEngine {
                 return;
             }
 
-            this.telegramNotifier.sendCycleDurationExceededMessage(JSON.stringify(report, null, 2));
+            let formattedReportString = `TOTAL_DURATION: ${report.totalDuration}\n----------\n`;
+            report.actions.forEach((action) => { formattedReportString += `${String(action.duration).padEnd(10)}: ${action.name}\n`; });
 
-            this.sendNextLongCycleNotificationAfter = moment().add(10, 'minutes');
+            this.telegramNotifier.sendCycleDurationExceededMessage(formattedReportString);
+
+            this.sendNextLongCycleNotificationAfter = moment().add(config.get('cycleDurationExceededNotificationIntervalSeconds'), 'seconds');
         }
     }
 

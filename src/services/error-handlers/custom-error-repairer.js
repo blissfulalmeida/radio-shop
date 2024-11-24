@@ -24,31 +24,31 @@ class CustomErrorRepairer {
         this.repairIteration += 1;
 
         this.pageReloadTimeout = setTimeout(() => {
-            this.telegramNotifier.sendErrorChannelTelegramMessage(`ERROR_REPAIRER: FIX #${this.repairIteration}.1: Page reload`);
+            this.telegramNotifier.sendErrorRepairerExceededMessage(`ERROR_REPAIRER: FIX #${this.repairIteration}.1: Page reload`);
 
             this.eventBus.emit(EVENT.PAGE_RELOAD);
-        }, seconds(30));
+        }, seconds(5));
 
         this.proxyReloadTimeout = setTimeout(async () => {
-            this.telegramNotifier.sendErrorChannelTelegramMessage(`ERROR_REPAIRER: FIX #${this.repairIteration}.2: Proxy reload and page reload`);
+            this.telegramNotifier.sendErrorRepairerExceededMessage(`ERROR_REPAIRER: FIX #${this.repairIteration}.2: Proxy reload and page reload`);
 
             await this.proxyManager.reloadProxy();
 
             this.eventBus.emit(EVENT.PAGE_RELOAD);
-        }, minutes(1));
+        }, minutes(30));
 
         this.fullPageReloadTimeout = setTimeout(() => {
-            this.telegramNotifier.sendErrorChannelTelegramMessage(`ERROR_REPAIRER: FIX #${this.repairIteration}.3: Page hard reload`);
+            this.telegramNotifier.sendErrorRepairerExceededMessage(`ERROR_REPAIRER: FIX #${this.repairIteration}.3: Page hard reload`);
 
             this.eventBus.emit(EVENT.FULL_PAGE_RELOAD);
-        }, minutes(2));
+        }, seconds(60));
 
         this.handsDownTimeout = setTimeout(() => {
-            this.telegramNotifier.sendErrorChannelTelegramMessage(`ERROR_REPAIRER: FIX #${this.repairIteration} All fix attempts failed. Retrying from the beginning`);
+            this.telegramNotifier.sendErrorRepairerExceededMessage(`ERROR_REPAIRER: FIX #${this.repairIteration} All fix attempts failed. Retrying from the beginning`);
 
             this.terminate();
             this.startRepairing();
-        }, minutes(3));
+        }, seconds(90));
     }
 
     terminate() {

@@ -20,11 +20,11 @@ class Bet365MyBetsPageHelper {
             if (currentUrl !== this.baseUrl) {
                 logger.info(`Current URL is different. Navigating to ${this.baseUrl}`);
 
-                await this.page.goto(this.baseUrl, { timeout: 15000, waitUntil: 'load' });
+                await this.page.goto(this.baseUrl, { timeout: 15000, waitUntil: 'domcontentloaded' });
             } else {
                 logger.info('Current URL is the same. Reloading the page.');
 
-                await this.page.reload({ timeout: 15000, waitUntil: 'load' });
+                await this.page.reload({ timeout: 15000, waitUntil: 'domcontentloaded' });
             }
         } catch (error) {
             throw new CustomBet365HelperError(
@@ -195,9 +195,10 @@ class Bet365MyBetsPageHelper {
                 durationMeasureTool.addAction(`CLICK_ON_FILTER_BETS:::${betsFilter}:::MOUSE_MOVE`);
             }
 
-            await delay(Math.random() * 500 + 100);
+            await delay(Math.random() * 50 + 100);
             await this.page.mouse.down();
-            await delay(Math.random() * 150 + 50);
+
+            await delay(Math.random() * 50 + 100);
             await this.page.mouse.up();
 
             if (durationMeasureTool) {
@@ -277,9 +278,11 @@ class Bet365MyBetsPageHelper {
                         await this.page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 1 });
                     }
 
-                    await delay(Math.random() * 100 + 100);
+                    await delay(Math.random() * 50 + 100);
+                    await this.page.mouse.down();
 
-                    await item.click();
+                    await delay(Math.random() * 50 + 100);
+                    await this.page.mouse.up();
 
                     if (durationMeasureTool) {
                         durationMeasureTool.addAction(`EXPANDED_COLLAPSED:::BET_${index}:::BOUNDING_BOX_CLICKED`);

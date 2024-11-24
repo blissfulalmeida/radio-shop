@@ -242,6 +242,8 @@ class Bet365PageWrapper {
 
             const loggedIn = await bet365MyBetsPageHelper.checkLoggedIn(reloadPage);
 
+            durationMeasureTool.addAction('CHECKED_LOGGED_IN');
+
             this._setState(loggedIn ? BET_365_STATE.LOGGED_IN : BET_365_STATE.LOGGED_OUT);
 
             if (!loggedIn) {
