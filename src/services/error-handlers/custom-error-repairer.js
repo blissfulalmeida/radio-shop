@@ -1,4 +1,4 @@
-const { seconds, minutes } = require('../../components/util');
+const { seconds } = require('../../components/util');
 const { EVENT } = require('../event-bus');
 
 class CustomErrorRepairer {
@@ -35,7 +35,7 @@ class CustomErrorRepairer {
             await this.proxyManager.reloadProxy();
 
             this.eventBus.emit(EVENT.PAGE_RELOAD);
-        }, minutes(30));
+        }, seconds(30));
 
         this.fullPageReloadTimeout = setTimeout(() => {
             this.telegramNotifier.sendErrorRepairerExceededMessage(`ERROR_REPAIRER: FIX #${this.repairIteration}.3: Page hard reload`);
