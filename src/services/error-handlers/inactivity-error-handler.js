@@ -1,6 +1,6 @@
-const { minutes } = require('../../components/util');
+const { seconds } = require('../../components/util');
 
-const SEND_INACTIVITY_NOTIFICATION_AFTER_MINUTES = 3;
+const SEND_INACTIVITY_NOTIFICATION_AFTER_SECONDS = 30;
 
 class InactivityErrorHandler {
     /**
@@ -27,11 +27,11 @@ class InactivityErrorHandler {
         this.inactivityTimeout = setTimeout(() => {
             this.fireInactivityNotification();
             this.reenableInactivityTimeout();
-        }, minutes(SEND_INACTIVITY_NOTIFICATION_AFTER_MINUTES));
+        }, seconds(SEND_INACTIVITY_NOTIFICATION_AFTER_SECONDS));
     }
 
     fireInactivityNotification() {
-        this.telegramNotifier.sendInactivityMessage(SEND_INACTIVITY_NOTIFICATION_AFTER_MINUTES);
+        this.telegramNotifier.sendInactivityMessage(SEND_INACTIVITY_NOTIFICATION_AFTER_SECONDS);
     }
 }
 

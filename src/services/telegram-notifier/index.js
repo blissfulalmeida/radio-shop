@@ -169,10 +169,10 @@ class TelegramNotifier {
         this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\n✅️Custom error resolved\n${reason ? `REASON: ${reason}\n` : ''}#${incidentId}`);
     }
 
-    async sendInactivityMessage(minutes) {
+    async sendInactivityMessage(seconds) {
         logger.info('TELEGRAM_NOTIFIER: Sending inactivity notification');
 
-        this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\nInactive for ${minutes} minutes`);
+        this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\nInactive for ${seconds} seconds`);
     }
 
     async sendCycleDurationExceededMessage(message) {
