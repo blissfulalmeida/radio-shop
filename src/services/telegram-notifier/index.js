@@ -21,11 +21,12 @@ class TelegramNotifier {
      * @param {boolean} makeCall
      */
     async _sendMainChannelTelegramMessage(message, makeCall = false) {
+        logger.info(`TELEGRAM_NOTIFIER: Sending main channel message:\n${message}`);
+
         axios({
             method: 'get',
             url: `https://api.telegram.org/bot${this.telegramBotId}/sendMessage?chat_id=${this.telegramChatId}&text=${encodeURIComponent(message)}`,
         })
-            .then(() => { logger.info('TELEGRAM_NOTIFIER: Message sent'); })
             .catch((error) => { logger.error(`NOTIFIER_ERROR:: Failed to send main channel message - ${message}. Error - ${error.message}`); });
 
         if (this.callShouldBeInitiated && makeCall) {
@@ -61,6 +62,8 @@ class TelegramNotifier {
      * @param {string} message
      */
     async _sendErrorChannelTelegramMessage(message, imageBuffer) {
+        logger.info(`TELEGRAM_NOTIFIER: Sending error channel message:\n${message}`);
+
         if (imageBuffer) {
             const form = new FormData();
 
@@ -73,7 +76,6 @@ class TelegramNotifier {
                 form,
                 { headers: form.getHeaders() },
             )
-                .then(() => { logger.info('TELEGRAM_NOTIFIER: Error message sent'); })
                 .catch((error) => { logger.error(`TELEGRAM_NOTIFIER:: Failed to send error message - ${message}. Error - ${error.message}`); });
         } else {
             axios({
@@ -86,26 +88,18 @@ class TelegramNotifier {
     }
 
     async sendAppLaunchedMessage() {
-        logger.info('TELEGRAM_NOTIFIER: Sending app launched message');
-
         this._sendMainChannelTelegramMessage(`#${this.bet365Account}\nApp launched`);
     }
 
     async sendLoggedOutMessage() {
-        logger.info('TELEGRAM_NOTIFIER: Sending logged out message');
-
         this._sendMainChannelTelegramMessage(`#${this.bet365Account}\nLogged out`, true);
     }
 
     async sendLoggedInMessage() {
-        logger.info('TELEGRAM_NOTIFIER: Sending logged in message');
-
         this._sendMainChannelTelegramMessage(`#${this.bet365Account}\nLogged in`);
     }
 
     async sendMainChannelMessage(message, makeCall = false) {
-        logger.info(`TELEGRAM_NOTIFIER: Sending main channel message: ${message}`);
-
         this._sendMainChannelTelegramMessage(`#${this.bet365Account}\n${message}`, makeCall);
     }
 
@@ -113,22 +107,18 @@ class TelegramNotifier {
      * @param {BetData} bet
      */
     async sendNewBetMessage(bet) {
-        const formattedbetMessage = `Team 1: ${bet.team1Name || '-'}\nTeam 2: ${bet.team2Name || '-'}\nMarket: ${bet.market || '-'}\nSide: ${bet.side || '-'}\nStake: ${bet.stake || '-'}\nOdd: ${bet.odd || '-'}`;
+        const formattedBetMessage = `Team 1: ${bet.team1Name || '-'}\nTeam 2: ${bet.team2Name || '-'}\nMarket: ${bet.market || '-'}\nSide: ${bet.side || '-'}\nStake: ${bet.stake || '-'}\nOdd: ${bet.odd || '-'}`;
 
-        logger.info(`TELEGRAM_NOTIFIER: Sending new bet message: ${formattedbetMessage}`);
-
-        await this._sendMainChannelTelegramMessage(`#${this.bet365Account}\nNew bet:\n${formattedbetMessage}`, true);
+        await this._sendMainChannelTelegramMessage(`#${this.bet365Account}\nNew bet:\n${formattedBetMessage}`, true);
     }
 
     /**
      * @param {BetData} bet
      */
     async sendsCashedOutBetMessage(bet) {
-        const formattedbetMessage = `Team 1: ${bet.team1Name || '-'}\nTeam 2: ${bet.team2Name || '-'}\nMarket: ${bet.market || '-'}\nSide: ${bet.side || '-'}\nStake: ${bet.stake || '-'}\nOdd: ${bet.odd || '-'}`;
+        const formattedBetMessage = `Team 1: ${bet.team1Name || '-'}\nTeam 2: ${bet.team2Name || '-'}\nMarket: ${bet.market || '-'}\nSide: ${bet.side || '-'}\nStake: ${bet.stake || '-'}\nOdd: ${bet.odd || '-'}`;
 
-        logger.info(`TELEGRAM_NOTIFIER: Sending casged out bet message: ${formattedbetMessage}`);
-
-        await this._sendMainChannelTelegramMessage(`#${this.bet365Account}\nCashed out:\n${formattedbetMessage}`, true);
+        await this._sendMainChannelTelegramMessage(`#${this.bet365Account}\nCashed out:\n${formattedBetMessage}`, true);
     }
 
     /**
@@ -136,8 +126,6 @@ class TelegramNotifier {
      * @param {string} message
      */
     async sendUnknownErrorMessage(incidentId, message) {
-        logger.info(`TELEGRAM_NOTIFIER: Sending unknown error notification: ${message}`);
-
         this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\n🚨Unknown error\n#${incidentId}\n${message}`);
     }
 
@@ -146,8 +134,6 @@ class TelegramNotifier {
      * @param {string} reason
      */
     async sendResolveUnknownErrorMessage(incidentId, reason = null) {
-        logger.info(`TELEGRAM_NOTIFIER: Sending resolved unknown error notification for incident: ${incidentId}${reason ? `, REASON: ${reason}` : ''}`);
-
         this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\n✅️Unknown error resolved\n${reason ? `REASON: ${reason}\n` : ''}#${incidentId}`);
     }
 
@@ -155,8 +141,6 @@ class TelegramNotifier {
      * @param {import('../bet365-page-wrapper/errors').CustomBet365HelperError} error
      */
     async sendCustomErrorMessage(incidentId, error) {
-        logger.info(`TELEGRAM_NOTIFIER: Sending custom error notification: ${error.message}`);
-
         this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\n🚨Custom error\n#${incidentId}\n${error.code}\n${formatReport(error.report)}`, error.screenshot);
     }
 
@@ -165,14 +149,10 @@ class TelegramNotifier {
      * @param {string} reason
      */
     async sendResolveCustomErrorMessage(incidentId, reason = null) {
-        logger.info(`TELEGRAM_NOTIFIER: Sending resolved custom error notification for incident: ${incidentId}${reason ? `, REASON: ${reason}` : ''}`);
-
         this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\n✅️Custom error resolved\n${reason ? `REASON: ${reason}\n` : ''}#${incidentId}`);
     }
 
     async sendInactivityMessage(seconds) {
-        logger.info('TELEGRAM_NOTIFIER: Sending inactivity notification');
-
         this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\nInactive for ${seconds} seconds`);
     }
 

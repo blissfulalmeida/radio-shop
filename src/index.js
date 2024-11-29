@@ -34,7 +34,13 @@ const validateConfig = () => {
     try {
         validateConfig();
 
-        logger.info(`Starting application. Partial config: ${JSON.stringify(_.omit(config, []))}`);
+        logger.info('##########################################################');
+        logger.info('#                                                        #');
+        logger.info('# Starting application                                   #');
+        logger.info('#                                                        #');
+        logger.info('##########################################################');
+        logger.info('');
+        logger.info(`Partial config: ${JSON.stringify(_.omit(config, []))}`);
 
         const storageDirectory = path.resolve(__dirname, '..', 'db');
         fs.mkdirSync(storageDirectory, { recursive: true });
