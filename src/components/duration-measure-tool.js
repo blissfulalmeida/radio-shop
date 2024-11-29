@@ -33,6 +33,21 @@ class DurationMeasureTool {
     }
 }
 
+/**
+ * @param {DurationMeasureToolReport} report
+ */
+const formatReport = (report) => {
+    let formattedReportString = '';
+
+    if (report) {
+        formattedReportString = `TOTAL_DURATION: ${report.totalDuration}\n----------\n`;
+        report.actions.forEach((action) => { formattedReportString += `${String(action.duration).padEnd(10)}: ${action.name}\n`; });
+    }
+
+    return formattedReportString;
+};
+
 module.exports = {
     DurationMeasureTool,
+    formatReport,
 };

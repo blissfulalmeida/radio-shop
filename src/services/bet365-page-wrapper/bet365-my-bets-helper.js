@@ -20,11 +20,11 @@ class Bet365MyBetsPageHelper {
             if (currentUrl !== this.baseUrl) {
                 logger.info(`Current URL is different. Navigating to ${this.baseUrl}`);
 
-                await this.page.goto(this.baseUrl, { timeout: 15000, waitUntil: 'domcontentloaded' });
+                await this.page.goto(this.baseUrl, { timeout: 0 });
             } else {
                 logger.info('Current URL is the same. Reloading the page.');
 
-                await this.page.reload({ timeout: 15000, waitUntil: 'domcontentloaded' });
+                await this.page.reload({ timeout: 0 });
             }
         } catch (error) {
             throw new CustomBet365HelperError(
@@ -40,7 +40,7 @@ class Bet365MyBetsPageHelper {
                 operation: () => this.page.$('div.wc-WebConsoleModule_Header > div.hm-HeaderModule'),
                 predicate: (el) => el,
                 timeout: 50,
-                attempts: pageWasJustReloaded ? 100 : 50,
+                attempts: pageWasJustReloaded ? 150 : 50,
             });
         } catch (error) {
             throw new CustomBet365HelperError(
@@ -166,6 +166,7 @@ class Bet365MyBetsPageHelper {
     }
 
     /**
+     * @param {string} betsFilter
      * @returns {Promise<void>}
      */
     async clickOnFilterBets(betsFilter, durationMeasureTool = null) {
@@ -207,7 +208,7 @@ class Bet365MyBetsPageHelper {
         } catch (error) {
             throw new CustomBet365HelperError(
                 `Failed to clickOnAllBets: ${error.message}`,
-                BET365_PAGE_WRAPPER_ERROR.FAILED_TO_CLICK_ON_ALL_BETS,
+                `${BET365_PAGE_WRAPPER_ERROR.FAILED_TO_CLICK_ON_BETS_SECTION}_${betsFilter.toUpperCase()}`,
             );
         }
     }
@@ -221,7 +222,7 @@ class Bet365MyBetsPageHelper {
                 operation: () => this.page.$('.myb-BetItemsContainer'),
                 predicate: (el) => el,
                 timeout: 50,
-                attempts: 50,
+                attempts: 80,
             });
         } catch (error) {
             throw new CustomBet365HelperError(

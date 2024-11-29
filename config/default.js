@@ -1,5 +1,6 @@
 module.exports = {
-    logLevel: 'info',
+    logLevel: 'debug',
+    fileLogLevel: 'info',
     octoBrowser: {
         baseUrl: 'http://localhost:58888',
     },

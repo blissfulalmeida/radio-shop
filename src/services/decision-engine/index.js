@@ -9,6 +9,7 @@ const { CustomBet365HelperError } = require('../bet365-page-wrapper/errors');
 const { InactivityErrorHandler } = require('../error-handlers/inactivity-error-handler');
 const { CustomBet365ErrorHandler } = require('../error-handlers/custom-error-handler');
 const { UnknownErrorHandler } = require('../error-handlers/unknown-error-handler');
+const { formatReport } = require('../../components/duration-measure-tool');
 
 const logger = createLogger(module);
 
@@ -99,10 +100,7 @@ class DecisionEngine {
                 return;
             }
 
-            let formattedReportString = `TOTAL_DURATION: ${report.totalDuration}\n----------\n`;
-            report.actions.forEach((action) => { formattedReportString += `${String(action.duration).padEnd(10)}: ${action.name}\n`; });
-
-            this.telegramNotifier.sendCycleDurationExceededMessage(formattedReportString);
+            this.telegramNotifier.sendCycleDurationExceededMessage(formatReport(report));
 
             this.sendNextLongCycleNotificationAfter = moment().add(config.get('cycleDurationExceededNotificationIntervalSeconds'), 'seconds');
         }

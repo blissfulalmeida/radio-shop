@@ -25,6 +25,7 @@ module.exports.createLogger = () => {
     });
 
     const level = config.get('logLevel');
+    const fileLogLevel = config.get('fileLogLevel');
 
     logger.add(
         new winston.transports.Console({
@@ -38,6 +39,17 @@ module.exports.createLogger = () => {
                     return info;
                 })(),
                 winston.format.printf((info) => `${info.timestamp} ${info.level.padStart(16)} ${info.ctx}:  ${info.message}`),
+            ),
+        }),
+    );
+
+    logger.add(
+        new winston.transports.File({
+            filename: `logs/${config.get('bet365.account')}.log`,
+            level: fileLogLevel,
+            format: winston.format.combine(
+                winston.format.timestamp(),
+                winston.format.printf((info) => `${info.timestamp} ${info.level.padStart(8)}:  ${info.message}`),
             ),
         }),
     );

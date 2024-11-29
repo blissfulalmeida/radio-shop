@@ -108,7 +108,7 @@ class Bet365PageWrapper {
         } finally {
             setTimeout(() => {
                 this._leanDataCrawlingTick();
-            }, 100);
+            }, 50);
         }
     }
 
@@ -226,7 +226,7 @@ class Bet365PageWrapper {
 
             this.cycleNumber += 1;
 
-            logger.info(`${this.cycleNumber}: Starting new cycle${reloadPage ? ' (reloading page)' : ' (skipping page reload)'}`);
+            logger.debug(`${this.cycleNumber}: Starting new cycle${reloadPage ? ' (reloading page)' : ' (skipping page reload)'}`);
 
             const bet365MyBetsPageHelper = new Bet365MyBetsPageHelper(this.page, this.bet365MyBetsPage);
 
@@ -328,7 +328,7 @@ class Bet365PageWrapper {
 
             const report = durationMeasureTool.report();
 
-            logger.info(`${this.cycleNumber}: Cycle end, report: ${JSON.stringify(_.omit(report, ['actions']))}`);
+            logger.debug(`${this.cycleNumber}: Cycle end, report: ${JSON.stringify(_.omit(report, ['actions']))}`);
 
             this.decisionEngine.handleBets(openBets, settledCashOutBets, report);
         } catch (error) {
@@ -336,7 +336,7 @@ class Bet365PageWrapper {
 
             const report = durationMeasureTool.report();
 
-            logger.info(`${this.cycleNumber}: Cycle error - ${error.message}, report: ${JSON.stringify(_.omit(report, ['actions']))}`);
+            logger.error(`${this.cycleNumber}: Cycle error - ${error.message}, report: ${JSON.stringify(_.omit(report, ['actions']))}`);
 
             if (error instanceof CustomBet365HelperError) {
                 let timeoutOccurred = false;
@@ -365,11 +365,17 @@ class Bet365PageWrapper {
                     reject(new Error('Screenshot timeout exceeded'));
                 }, 500));
 
-                await Promise.race([captureScreenshot(), timeout]).catch((err) => {
-                    if (err.message === 'Screenshot timeout exceeded') {
+                await Promise.race([captureScreenshot(), timeout])
+                    .then(() => {
+                        durationMeasureTool.addAction('SCREENSHOT_CAPTURED');
+                    })
+                    .catch((err) => {
+                        durationMeasureTool.addAction('SCREENSHOT_ERROR');
+
                         error.addScreenshotGrabError(err);
-                    }
-                });
+                    });
+
+                error.addReport(durationMeasureTool.report());
             }
 
             this.decisionEngine.handleError(error, durationMeasureTool.report());

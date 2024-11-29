@@ -2,6 +2,7 @@ const config = require('config');
 const axios = require('axios').default;
 const FormData = require('form-data');
 const { createLogger } = require('../../components/logger');
+const { formatReport } = require('../../components/duration-measure-tool');
 
 const logger = createLogger(module);
 
@@ -156,7 +157,7 @@ class TelegramNotifier {
     async sendCustomErrorMessage(incidentId, error) {
         logger.info(`TELEGRAM_NOTIFIER: Sending custom error notification: ${error.message}`);
 
-        this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\n🚨Custom error\n#${incidentId}\n${error.message}`, error.screenshot);
+        this._sendErrorChannelTelegramMessage(`#${this.bet365Account}\n🚨Custom error\n#${incidentId}\n${error.code}\n${formatReport(error.report)}`, error.screenshot);
     }
 
     /**
