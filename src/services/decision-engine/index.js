@@ -92,7 +92,7 @@ class DecisionEngine {
         const totalDuration = report.totalDuration;
 
         if (totalDuration > config.get('maxCycleDuration')) {
-            logger.warn(`Cycle duration exceeded the limit. Current duration: ${totalDuration}, limit: ${config.get('maxCycleDuration')}`);
+            logger.info(`Cycle duration exceeded the limit. Current duration: ${totalDuration}, limit: ${config.get('maxCycleDuration')}`);
 
             if (this.sendNextLongCycleNotificationAfter && !moment().isAfter(this.sendNextLongCycleNotificationAfter)) {
                 logger.info('Long cycle notification already sent, skipping');
