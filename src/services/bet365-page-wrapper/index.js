@@ -108,7 +108,7 @@ class Bet365PageWrapper {
         } finally {
             setTimeout(() => {
                 this._leanDataCrawlingTick();
-            }, 50);
+            }, 500);
         }
     }
 
