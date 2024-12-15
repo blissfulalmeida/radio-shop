@@ -62,6 +62,7 @@ class Bet365PageWrapper {
             this._starExistingPageCrawlingLoop();
 
             this._subscribeToEvents();
+            this._startIntervalScreenshotCapture();
         } catch (error) {
             throw new Error(`BET365_PAGE_WRAPPER_ERROR:: Failed to init: ${error.message}`);
         }
@@ -94,7 +95,7 @@ class Bet365PageWrapper {
         } finally {
             setTimeout(() => {
                 this._dataCrawlingTick();
-            }, 1000 * 60 * 10);
+            }, 1000 * config.get('bet365PageReloadIntervalSeconds'));
         }
     }
 
@@ -122,6 +123,44 @@ class Bet365PageWrapper {
         this.eventBus.on(EVENT.FULL_PAGE_RELOAD, async () => {
             await this._executeAsyncJob(() => this._recreateMainPage().catch(_.noop));
         });
+    }
+
+    _startIntervalScreenshotCapture() {
+        this._takePageScreenshotTick();
+    }
+
+    async _takePageScreenshotTick() {
+        try {
+            await this._executeAsyncJob(() => this._takePageScreenshot(false));
+        } finally {
+            setTimeout(() => {
+                this._takePageScreenshotTick();
+            }, 1000 * 10);
+        }
+    }
+
+    async _takePageScreenshot() {
+        try {
+            if (!this.page) {
+                return;
+            }
+
+            const screenshotDir = path.resolve(__dirname, '..', '..', '..', 'screenshots', config.get('bet365.account'));
+            const screenshotName = `${moment.utc().format('YYYY-MM-DD-HH-mm-ss')}.jpg`;
+
+            if (!fs.existsSync(screenshotDir)) {
+                fs.mkdirSync(screenshotDir, { recursive: true });
+            }
+
+            await this.page.screenshot({
+                type: 'jpeg',
+                quality: 100,
+                omitBackground: true,
+                path: path.join(screenshotDir, screenshotName),
+            });
+        } catch (error) {
+            logger.error(`SCREENSHOT_ERROR:: Failed to take screenshot: ${error.message}`);
+        }
     }
 
     _executeAsyncJob(asyncJob) {

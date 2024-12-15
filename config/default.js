@@ -18,6 +18,7 @@ module.exports = {
         shouldBeInitiated: true,
     },
     maxCycleDuration: 1000 * 15,
+    bet365PageReloadIntervalSeconds: 60 * 10,
     cycleDurationExceededNotificationIntervalSeconds: 60 * 5,
     unknownErrorNotificationIntervalSeconds: 60 * 5,
     customErrorNotificationIntervalSeconds: 60 * 2,

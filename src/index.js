@@ -11,6 +11,7 @@ const { DecisionEngine } = require('./services/decision-engine');
 const { StorageCleaner } = require('./services/storage-cleaner');
 const { ProxyManager } = require('./services/proxy-manager');
 const { EventBus } = require('./services/event-bus');
+const { ImageCleaner } = require('./services/image-cleaner');
 
 const logger = createLogger(module);
 
@@ -52,6 +53,7 @@ const validateConfig = () => {
         const decisionEngine = new DecisionEngine(storage, telegramNotifier, proxyManager, eventBus);
         const octoBrowserApi = new OctoBrowserApi();
         const storageCleaner = new StorageCleaner(storage, config.get('storage.openBets.deleteAfterSeconds'));
+        const imageCleaner = new ImageCleaner();
 
         const currentOpenBets = storage.get('openBets') || [];
 
@@ -77,6 +79,7 @@ const validateConfig = () => {
 
         storageCleaner.init();
         decisionEngine.init();
+        imageCleaner.init();
     } catch (error) {
         logger.error(`INITIALIZATION_ERROR:: Failed to start application: ${error.message}`);
 
