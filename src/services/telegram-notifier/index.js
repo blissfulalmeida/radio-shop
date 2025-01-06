@@ -32,13 +32,6 @@ class TelegramNotifier {
         if (this.callShouldBeInitiated && makeCall) {
             axios({
                 method: 'post',
-                url: this.callWebHookUrl,
-            })
-                .then(() => { logger.info('TELEGRAM_NOTIFIER: Call made'); })
-                .catch((error) => { logger.error(`TELEGRAM_NOTIFIER:: Failed to make call: ${error.message}`); });
-
-            axios({
-                method: 'post',
                 url: 'https://api.pushover.net/1/messages.json',
                 data: {
                     token: config.get('pushover.token'),
