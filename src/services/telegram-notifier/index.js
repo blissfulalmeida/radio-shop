@@ -12,7 +12,6 @@ class TelegramNotifier {
         this.telegramChatId = config.get('telegram.chatId');
         this.telegramErrorChatId = config.get('telegram.errorChatId');
         this.bet365Account = config.get('bet365.account');
-        this.callWebHookUrl = config.get('call.webHookUrl');
         this.callShouldBeInitiated = config.get('call.shouldBeInitiated');
     }
 
