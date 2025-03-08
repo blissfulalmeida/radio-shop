@@ -8,7 +8,7 @@ const _ = require('lodash');
 const { createLogger } = require('../../components/logger');
 const { Bet365MyBetsPageHelper } = require('./bet365-my-bets-helper');
 const { beautifyHTML } = require('../../components/util');
-const { OpenBetDataExtractor, SetteledBetDataExtractor } = require('./bet-data-extractor');
+const { OpenBetDataExtractor, SettledBetDataExtractor } = require('./bet-data-extractor');
 const { BET_365_STATE } = require('../../constants');
 const { DurationMeasureTool } = require('../../components/duration-measure-tool');
 const { CustomBet365HelperError } = require('./errors');
@@ -341,6 +341,7 @@ class Bet365PageWrapper {
             }
 
             const openBets = [];
+            const settledBets = [];
             const settledCashOutBets = [];
 
             Array.from(betItems).forEach((betElement) => {
@@ -354,11 +355,15 @@ class Bet365PageWrapper {
                         openBets.push(betData);
                     }
                 } else if (className.includes('myb-SettledBetItem')) {
-                    const extractor = new SetteledBetDataExtractor(betElement);
+                    const extractor = new SettledBetDataExtractor(betElement);
                     const betData = extractor.extractBetData();
 
-                    if (betData && betData.cashedOut) {
-                        settledCashOutBets.push(betData);
+                    if (betData) {
+                        if (betData.cashedOut) {
+                            settledCashOutBets.push(betData);
+                        } else {
+                            settledBets.push(betData);
+                        }
                     }
                 }
             });
@@ -369,7 +374,7 @@ class Bet365PageWrapper {
 
             logger.debug(`${this.cycleNumber}: Cycle end, report: ${JSON.stringify(_.omit(report, ['actions']))}`);
 
-            this.decisionEngine.handleBets(openBets, settledCashOutBets, report);
+            this.decisionEngine.handleBets({ openBets, settledBets, settledCashOutBets, report });
         } catch (error) {
             durationMeasureTool.addAction('ERROR');
 

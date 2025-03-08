@@ -23,12 +23,14 @@ class DecisionEngine {
      * @param {import('../telegram-notifier').TelegramNotifier} telegramNotifier
      * @param {import('../proxy-manager').ProxyManager} proxyManager
      * @param {import('../event-bus').EventBus} eventBus
+     * @param {import('../google-sheets').GoogleSheetsService} googleSheetsService
      */
-    constructor(storage, telegramNotifier, proxyManager, eventBus) {
+    constructor(storage, telegramNotifier, proxyManager, eventBus, googleSheetsService) {
         this.storage = storage;
         this.telegramNotifier = telegramNotifier;
         this.proxyManager = proxyManager;
         this.eventBus = eventBus;
+        this.googleSheetsService = googleSheetsService;
 
         /**
          * @type {string|null}
@@ -71,17 +73,19 @@ class DecisionEngine {
 
     /**
      * @param {BetData[]} openBets
-     * @param {BetData[]} settledCashedOutBets
+     * @param {BetData[]} settledBets
+     * @param {BetData[]} settledCashOutBets
      * @param {DurationMeasureToolReport} report
      * */
-    handleBets(openBets, settledCashedOutBets, report) {
+    handleBets({ openBets, settledBets, settledCashOutBets, report }) {
         // If the data arrives, all error handlers should be resolved
         this.inactivityErrorHandler.reenableInactivityTimeout();
         this.customBet365ErrorHandler.resolveIncident();
         this.unknownErrorHandler.resolveIncident();
 
         this.handleOpenBets(openBets);
-        this.handleSettledCashOutBets(settledCashedOutBets);
+        this.handleSettledBets(settledBets);
+        this.handleSettledCashOutBets(settledCashOutBets);
         this.handleReport(report);
     }
 
@@ -158,6 +162,66 @@ class DecisionEngine {
         });
 
         this.storage.set('openBets', updatedSortedBets);
+    }
+
+    /**
+     * @param {BetData[]} openBets
+     */
+    handleSettledBets(settledBets) {
+        /** @type {BetData[]} */
+        const currentBets = _.cloneDeep(this.storage.get('settledBets') || []);
+
+        currentBets.forEach((bet) => { bet.metadata = bet.metadata || {}; });
+
+        const betsMap = currentBets.reduce((acc, bet) => acc.set(bet.key, bet), new Map());
+
+        const betsToSave = [];
+
+        // eslint-disable-next-line no-restricted-syntax
+        for (const bet of _.cloneDeep(settledBets)) {
+            const betExistsInStorage = betsMap.has(bet.key);
+
+            if (!betExistsInStorage) {
+                bet.metadata = {
+                    firstSeenAt: moment.utc().toISOString(),
+                    lastSeenAt: moment.utc().toISOString(),
+                };
+
+                betsMap.set(bet.key, bet);
+                betsToSave.push(bet);
+            } else {
+                const existingBet = betsMap.get(bet.key);
+
+                existingBet.metadata = existingBet.metadata || {};
+                existingBet.metadata.lastSeenAt = moment.utc().toISOString();
+
+                if (!existingBet.metadata.firstSeenAt) {
+                    existingBet.metadata.firstSeenAt = moment.utc().toISOString();
+                }
+            }
+        }
+
+        // Saving bets in batches to prevent rate limiting and concurrent writes (in multiple invocations at the same time data can be lost)
+        if (betsToSave.length > 0) {
+            this.googleSheetsService.saveBets(betsToSave);
+        }
+
+        const updatedSortedBets = Array.from(betsMap.values()).sort((a, b) => {
+            const aTime = moment(a.metadata.lastSeenAt);
+            const bTime = moment(b.metadata.lastSeenAt);
+
+            if (aTime.isBefore(bTime)) {
+                return -1;
+            }
+
+            if (aTime.isAfter(bTime)) {
+                return 1;
+            }
+
+            return 0;
+        });
+
+        this.storage.set('settledBets', updatedSortedBets);
     }
 
     /**

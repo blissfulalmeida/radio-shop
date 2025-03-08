@@ -77,7 +77,7 @@ class OpenBetDataExtractor {
     }
 }
 
-class SetteledBetDataExtractor {
+class SettledBetDataExtractor {
     constructor(betElement) {
         this.betElement = betElement;
     }
@@ -90,7 +90,7 @@ class SetteledBetDataExtractor {
             const $ = cheerio.load(this.betElement);
             const betDict = {};
 
-            betDict.stake = $(this.betElement).find('.mye-StakeDisplay_StakeWrapper').text().trim();
+            betDict.stake = $(this.betElement).find('.mye-StakeDisplay_StakeWrapper').text().trim() || $(this.betElement).find('.mgb-StakeDisplay_StakeWrapper').text().trim();
 
             const sides = $(this.betElement).find('.myb-BetParticipant_ParticipantSpan');
             if (sides.length === 2) {
@@ -130,6 +130,8 @@ class SetteledBetDataExtractor {
 
             betDict.cashedOut = $(this.betElement).text().includes('Cashed Out') || false;
 
+            betDict.return = $(this.betElement).find('.myb-SettledBetItemFooter_BetInformationText').text().trim();
+
             if (betDict.stake === '' && betDict.side === '' && betDict.market === '') {
                 return null;
             }
@@ -155,5 +157,5 @@ class SetteledBetDataExtractor {
 
 module.exports = {
     OpenBetDataExtractor,
-    SetteledBetDataExtractor,
+    SettledBetDataExtractor,
 };

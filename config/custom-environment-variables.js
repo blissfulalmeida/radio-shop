@@ -31,4 +31,7 @@ module.exports = {
         token: 'CB_PUSHOVER_TOKEN',
         user: 'CB_PUSHOVER_USER',
     },
+    googleSheets: {
+        spreadsheetId: 'CB_GOOGLE_SHEETS_SPREADSHEET_ID',
+    },
 };

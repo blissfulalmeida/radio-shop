@@ -35,6 +35,12 @@ class ImageCleaner {
         try {
             logger.info('Cleaning images...');
 
+            const dirExists = await fs.promises.stat(this.screenshotsImagesDir);
+
+            if (!dirExists) {
+                return;
+            }
+
             const files = await fs.promises.readdir(this.screenshotsImagesDir);
 
             const now = Date.now();

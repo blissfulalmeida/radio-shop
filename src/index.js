@@ -12,6 +12,7 @@ const { StorageCleaner } = require('./services/storage-cleaner');
 const { ProxyManager } = require('./services/proxy-manager');
 const { EventBus } = require('./services/event-bus');
 const { ImageCleaner } = require('./services/image-cleaner');
+const { GoogleSheetsService } = require('./services/google-sheets');
 
 const logger = createLogger(module);
 
@@ -22,6 +23,7 @@ const validateConfig = () => {
         'telegram.botId',
         'telegram.chatId',
         'telegram.errorChatId',
+        'googleSheets.spreadsheetId',
     ];
 
     const missingConfig = requiredConfig.filter((key) => !config.has(key));
@@ -46,14 +48,20 @@ const validateConfig = () => {
         const storageDirectory = path.resolve(__dirname, '..', 'db');
         fs.mkdirSync(storageDirectory, { recursive: true });
 
+        const googleSheetsService = new GoogleSheetsService();
         const eventBus = new EventBus();
         const storage = new SimpleFileBasedStorage(path.resolve(storageDirectory, `${config.get('bet365.account')}.json`));
         const telegramNotifier = new TelegramNotifier();
         const proxyManager = new ProxyManager();
-        const decisionEngine = new DecisionEngine(storage, telegramNotifier, proxyManager, eventBus);
+        const decisionEngine = new DecisionEngine(storage, telegramNotifier, proxyManager, eventBus, googleSheetsService);
         const octoBrowserApi = new OctoBrowserApi();
         const storageCleaner = new StorageCleaner(storage, config.get('storage.openBets.deleteAfterSeconds'));
         const imageCleaner = new ImageCleaner();
+
+        await googleSheetsService.init()
+            .catch((error) => {
+                throw new Error(`Failed to connect to Google Sheets: ${error}`);
+            });
 
         const currentOpenBets = storage.get('openBets') || [];
 
