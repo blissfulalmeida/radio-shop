@@ -22,4 +22,7 @@ module.exports = {
     cycleDurationExceededNotificationIntervalSeconds: 60 * 5,
     unknownErrorNotificationIntervalSeconds: 60 * 5,
     customErrorNotificationIntervalSeconds: 60 * 2,
+    googleSheets: {
+        spreadsheetId: '1CnBxc5xWbyoyXaEKCCcLNL6Jn9hzxq2SNDKHtyctZsM',
+    },
 };
